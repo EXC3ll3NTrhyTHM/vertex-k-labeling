@@ -6,8 +6,10 @@ A Python toolkit for exploring k-labelings of *Mongolian Tent* graphs, a three-r
 
 * **Graph generation** – build ladder graphs *L*₃,ₙ and Mongolian Tent graphs *MT*₍₃,ₙ₎.
 * **Solvers**
-  * Exact backtracking solver for small *n*.
-  * Fast *randomised greedy* heuristic able to find feasible labelings for much larger graphs.
+  * Exact backtracking solver for small *n* (guaranteed optimal but exponential time).
+  * Heuristic family for much larger graphs (quick, not always optimal):
+    * **Accurate mode** – default randomised-greedy with many vertex/order shuffles to escape local minima.
+    * **Fast mode** – new multi-pass first-fit greedy with a handful of random passes proportional to *n* (ultra-fast; may return a slightly larger *k*).
 * **Visualisation** – render labelings to PNG via Graphviz.
 * **Extensive unit tests** covering graph construction and solver behaviour.
 
@@ -33,14 +35,27 @@ $ pip install -r requirements.txt
 #    • Windows: download from graphviz.org and add the \bin directory to PATH
 
 # 5. Run the demo script
-#    For heuristic solver (default):
+#    Heuristic solver (accurate mode is default):
 #    n_value is optional and defaults to 5
-$ python main.py [--n <n_value>]
+$ python main.py [--n <n_value>]  # accurate mode
+#    Fast heuristic mode:
+$ python main.py --n <n_value> --heuristic_mode fast
 #    For backtracking solver:
 $ python main.py --n <n_value> --solver backtracking
 ```
 
-The script prints a feasible *k* and saves a visualisation (`mt3_<n>_heuristic.png` or `mt3_<n>_backtracking.png`).
+The script prints a feasible *k* and saves a visualisation (`mt3_<n>_heuristic_<mode>.png` or `mt3_<n>_backtracking.png`).
+
+---
+
+## Heuristic modes explained
+
+| Mode | CLI value | Core idea | Passes | Typical speed | k-quality |
+|------|-----------|-----------|--------|---------------|-----------|
+| Accurate (default) | `accurate` | Randomised greedy: many vertex/order shuffles to escape local minima. | 100 × attempts (configurable) | Fast for n ≤ 8, slower for very large n | Best chance of low k |
+| Fast | `fast` | Deterministic first-fit by degree, then only *⌈n/2⌉* (max 10) random attempts. | ≤ 11 | Very fast | Slightly higher k possible |
+
+Choose `fast` when you need a quick, “good-enough” result (e.g., exploratory runs or large n), and switch back to `accurate` when precision matters.
 
 ---
 
@@ -65,6 +80,29 @@ k, labeling = find_heuristic_labeling(n=8)
 ```python
 from src.visualization import visualize_labeling
 visualize_labeling(G, labeling, output="mt3_8.png")
+```
+
+---
+
+## Command-line utilities
+
+| Script | Path | Purpose |
+|--------|------|---------|
+| Demo / solver runner | `main.py` | Find a feasible labeling, print results, optionally visualise. Supports `--n`, `--solver`, `--heuristic_mode`. |
+| Stand-alone visualiser | `src/visualization.py` | Render a pre-computed labeling to PNG/SVG. Expects `n` and output filename; internally calls the backtracking solver by default. Useful for re-rendering or experimenting with Graphviz styles. |
+| Unit test suite | `python -m unittest discover tests -v` | Run all automated tests to ensure code correctness. |
+
+Examples:
+
+```bash
+# Run heuristic fast mode and view PNG
+python main.py --n 20 --heuristic_mode fast
+
+# Render a previously stored labeling JSON (example)
+python -m src.visualization mt_labeling.json --file tent.png
+
+# Run tests
+python -m unittest discover tests -v
 ```
 
 ---

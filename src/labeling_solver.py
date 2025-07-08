@@ -142,7 +142,48 @@ def greedy_k_labeling(adjacency_list: Dict[Any, List[Any]], k_upper_bound: int, 
             return vertex_labels
     return None
 
-def find_feasible_k_labeling(tent_size: int, max_k_multiplier: int = MAX_K_MULTIPLIER_DEFAULT, num_attempts: int = GREEDY_ATTEMPTS_DEFAULT) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
+# --------------------
+# Fast deterministic greedy heuristic (single pass, no random shuffling)
+# --------------------
+
+
+def _first_fit_greedy_k_labeling(
+    adjacency_list: Dict[Any, List[Any]],
+    k_upper_bound: int,
+) -> Optional[Dict[Any, int]]:
+    """A single-pass deterministic greedy solver.
+
+    Vertices are processed in descending degree order and assigned the
+    smallest label that maintains edge weight uniqueness.
+
+    This trades potentially higher k values for much faster runtimes
+    compared to the randomized multi-attempt heuristic.
+    """
+
+    # Order vertices by degree (high -> low) to maximize early pruning.
+    vertices = sorted(adjacency_list.keys(), key=lambda v: len(adjacency_list[v]), reverse=True)
+
+    vertex_labels: Dict[Any, int] = {}
+    for vertex in vertices:
+        assigned = False
+        for label in range(1, k_upper_bound + 1):
+            vertex_labels[vertex] = label
+            # Validate only the newly assigned vertex to keep this fast.
+            if is_labeling_valid(adjacency_list, vertex_labels, last_vertex=vertex):
+                assigned = True
+                break
+        if not assigned:
+            # Failed to find a label within bound ⇒ give up for this k.
+            return None
+    return vertex_labels
+
+def find_feasible_k_labeling(
+    tent_size: int,
+    max_k_multiplier: int = MAX_K_MULTIPLIER_DEFAULT,
+    num_attempts: int = GREEDY_ATTEMPTS_DEFAULT,
+    *,
+    algorithm: str = "accurate",
+) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
     """
     Find a feasible k-labeling for the Mongolian Tent graph using a heuristic search.
 
@@ -164,16 +205,39 @@ def find_feasible_k_labeling(tent_size: int, max_k_multiplier: int = MAX_K_MULTI
     k = lower_bound
     k_upper_bound = lower_bound * max_k_multiplier  # safety upper limit
 
-    print(f"\n[Heuristic Search] Starting search for n={tent_size} from k={lower_bound} (limit: k={k_upper_bound})...")
+    print(
+        f"\n[Heuristic Search] Starting search for n={tent_size} from k={lower_bound} (limit: k={k_upper_bound}) using '{algorithm}' heuristic..."
+    )
 
     while k <= k_upper_bound:
-        if k == lower_bound or k % 10 == 0:
-            print(f"Attempting randomized greedy solve for k={k} ({num_attempts} attempts)...")
-        for _ in range(num_attempts):
-            labeling = greedy_k_labeling(adjacency_list, k)
+        if algorithm == "fast":
+            if k == lower_bound or k % 10 == 0:
+                print(f"Attempting fast greedy solve for k={k} (multi-pass)...")
+
+            # 1) Deterministic first-fit pass (very quick)
+            labeling = _first_fit_greedy_k_labeling(adjacency_list, k)
+            if labeling:
+                print(f"Fast heuristic found a valid labeling with k={k} for n={tent_size} on deterministic pass.")
+                return k, labeling
+
+            # 2) Limited randomized passes correlated to n to improve accuracy without large slowdown.
+            passes = max(2, min(10, tent_size // 2))  # e.g., n=5 ⇒ 2 passes, n=20 ⇒ 10 passes cap.
+            for _ in range(passes):
+                labeling = greedy_k_labeling(adjacency_list, k, attempts=1)
+                if labeling:
+                    print(
+                        f"Fast heuristic found a valid labeling with k={k} for n={tent_size} after randomized pass."
+                    )
+                    return k, labeling
+        else:  # accurate / default multi-attempt heuristic
+            if k == lower_bound or k % 10 == 0:
+                print(f"Attempting randomized greedy solve for k={k} ({num_attempts} attempts)...")
+            labeling = greedy_k_labeling(adjacency_list, k, attempts=num_attempts)
             if labeling:
                 print(f"Heuristic search found a valid labeling with k={k} for n={tent_size}.")
                 return k, labeling
         k += 1
-    print(f"Heuristic search failed to find a solution for n={tent_size} within the k limit (k>{k_upper_bound}).")
+    print(
+        f"Heuristic search failed to find a solution for n={tent_size} within the k limit (k>{k_upper_bound})."
+    )
     return None, None 

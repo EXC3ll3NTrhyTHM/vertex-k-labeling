@@ -12,11 +12,13 @@ def main():
     """
     parser = argparse.ArgumentParser(description="Find and visualize k-labeling for Mongolian Tent graphs.")
     parser.add_argument("--n", type=int, default=DEFAULT_TENT_SIZE, help=f"Value of n for MT_{{3,n}} (default: {DEFAULT_TENT_SIZE})")
-    parser.add_argument("--solver", type=str, default=DEFAULT_SOLVER_TYPE, choices=["heuristic", "backtracking"], help=f"Solver to use: 'heuristic' or 'backtracking' (default: {DEFAULT_SOLVER_TYPE})")
+    parser.add_argument("--solver", type=str, default=DEFAULT_SOLVER_TYPE, choices=["heuristic", "backtracking"], help=f"Solver to use: 'heuristic' (accurate or fast) or 'backtracking' (default: {DEFAULT_SOLVER_TYPE})")
+    parser.add_argument("--heuristic_mode", type=str, default="accurate", choices=["accurate", "fast"], help="Heuristic mode: 'accurate' uses randomized multi-attempt search (slower, better chance of optimal k), 'fast' uses a single-pass greedy (faster, possibly higher k). Ignored for backtracking solver.")
     args = parser.parse_args()
 
     n = args.n
     solver_type = args.solver
+    heuristic_mode = args.heuristic_mode
 
     print(f"Finding a {solver_type} k-labeling for Mongolian Tent graph with n = {n}")
 
@@ -24,7 +26,7 @@ def main():
     
     start_time = time.time()
     if solver_type == "heuristic":
-        k, labeling = find_feasible_k_labeling(n)
+        k, labeling = find_feasible_k_labeling(n, algorithm=heuristic_mode)
         lower_bound = calculate_lower_bound(n)
         if isinstance(k, int) and isinstance(lower_bound, int):
             gap = k - lower_bound
@@ -51,8 +53,17 @@ def main():
         # --- Visualization Example ---
         try:
             from src.visualization import visualize_k_labeling
-            visualize_k_labeling(graph, labeling, output=f"graphs/mt3_{n}_{solver_type}.png", heuristic_k=k, lower_bound_k=lower_bound, gap=gap, time_taken=time_taken, solver_name=solver_name)
-            print(f"Visualization saved to graphs/mt3_{n}_{solver_type}.png")
+            visualize_k_labeling(
+                graph,
+                labeling,
+                output=f"graphs/mt3_{n}_{solver_type}_{heuristic_mode}.png",
+                heuristic_k=k,
+                lower_bound_k=lower_bound,
+                gap=gap,
+                time_taken=time_taken,
+                solver_name=f"{solver_name} ({heuristic_mode})" if solver_type == "heuristic" else solver_name,
+            )
+            print(f"Visualization saved to graphs/mt3_{n}_{solver_type}_{heuristic_mode}.png")
         except ImportError:
             print("Graphviz not installed; skipping visualization.")
     else:
