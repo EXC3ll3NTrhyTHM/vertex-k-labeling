@@ -85,8 +85,8 @@ def _backtrack_k_labeling(adjacency_list: Dict[Any, List[Any]], max_k_value: int
 
     for label in range(1, max_k_value + 1):
         vertex_labels[vertex_to_label] = label
-        # Validate the partial labeling
-        if is_labeling_valid(adjacency_list, vertex_labels):
+        # Validate only edges incident to the newly labeled vertex—much cheaper
+        if is_labeling_valid(adjacency_list, vertex_labels, last_vertex=vertex_to_label):
             result = _backtrack_k_labeling(adjacency_list, max_k_value, vertex_labels, remaining_vertices)
             if result is not None:
                 return result  # Found a solution

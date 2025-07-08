@@ -90,7 +90,6 @@ visualize_labeling(G, labeling, output="mt3_8.png")
 |--------|------|---------|
 | Demo / solver runner | `main.py` | Find a feasible labeling, print results, optionally visualise. Supports `--n`, `--solver`, `--heuristic_mode`. |
 | Stand-alone visualiser | `src/visualization.py` | Render a pre-computed labeling to PNG/SVG. Expects `n` and output filename; internally calls the backtracking solver by default. Useful for re-rendering or experimenting with Graphviz styles. |
-| Unit test suite | `python -m unittest discover tests -v` | Run all automated tests to ensure code correctness. |
 
 Examples:
 
