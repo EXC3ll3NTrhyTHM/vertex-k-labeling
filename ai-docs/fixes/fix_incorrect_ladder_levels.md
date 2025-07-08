@@ -1,4 +1,4 @@
-# Enhancement 03: Fix Incorrect Ladder Levels (3 Rows Required)
+# Fix 01: Fix Incorrect Ladder Levels (3 Rows Required)
 
 ## Goal
 
