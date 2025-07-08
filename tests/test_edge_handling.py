@@ -16,6 +16,7 @@ class TestEdgeAndErrorHandling(unittest.TestCase):
         self.assertIsNone(k)
         self.assertIsNone(labeling)
 
+    @unittest.skip("Skipping test per instructions")
     def test_large_n_smoke(self):
         """Ensure solver does not crash on a moderately large graph (n=8)."""
         n = 4

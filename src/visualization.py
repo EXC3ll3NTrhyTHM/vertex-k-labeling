@@ -109,13 +109,13 @@ def visualize_k_labeling(
             dot.subgraph(_G(name='apex', body=[apex_node], graph_attr={'rank': 'min'}))
     else:
         # Fallback simple node add
-        for v, lbl in labeling.items():
-            dot.node(format_vertex_id(v), label=f"{lbl}")
+        for v, label_value in labeling.items():
+            dot.node(format_vertex_id(v), label=f"{label_value}")
 
     # Add edges with weights
     added = set()
-    for u, nbrs in graph.items():
-        for v in nbrs:
+    for u, neighbors in graph.items():
+        for v in neighbors:
             # Avoid duplicate edges
             if (v, u) in added:
                 continue

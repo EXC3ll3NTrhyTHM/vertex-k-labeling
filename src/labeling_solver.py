@@ -1,5 +1,6 @@
 from src.graph_generator import create_mongolian_tent_graph
 from src.graph_properties import calculate_lower_bound
+from src.constants import MAX_K_MULTIPLIER_DEFAULT, GREEDY_ATTEMPTS_DEFAULT
 from typing import Any, Tuple, Union
 
 def _get_vertex_sort_key(v: Union[Tuple[int, int], str]) -> Tuple[int, str, str]:
@@ -119,7 +120,7 @@ def find_optimal_k_labeling(tent_size):
             return k, labeling
         k += 1
 
-def greedy_k_labeling(adjacency_list, k_upper_bound, attempts: int = 50):
+def greedy_k_labeling(adjacency_list, k_upper_bound, attempts: int = GREEDY_ATTEMPTS_DEFAULT):
     """A more robust greedy solver that makes multiple randomized attempts."""
     import random
     for _ in range(attempts):
@@ -141,7 +142,7 @@ def greedy_k_labeling(adjacency_list, k_upper_bound, attempts: int = 50):
             return vertex_labels
     return None
 
-def find_feasible_k_labeling(tent_size: int, max_k_multiplier=20, num_attempts=100):
+def find_feasible_k_labeling(tent_size: int, max_k_multiplier=MAX_K_MULTIPLIER_DEFAULT, num_attempts=GREEDY_ATTEMPTS_DEFAULT):
     """
     Find a feasible k-labeling for the Mongolian Tent graph using a heuristic search.
 
@@ -161,11 +162,11 @@ def find_feasible_k_labeling(tent_size: int, max_k_multiplier=20, num_attempts=1
     adjacency_list = create_mongolian_tent_graph(tent_size)
     lower_bound = calculate_lower_bound(tent_size)
     k = lower_bound
-    max_k = lower_bound * max_k_multiplier  # safety upper limit
+    k_upper_bound = lower_bound * max_k_multiplier  # safety upper limit
 
-    print(f"\n[Heuristic Search] Starting search for n={tent_size} from k={lower_bound} (limit: k={max_k})...")
+    print(f"\n[Heuristic Search] Starting search for n={tent_size} from k={lower_bound} (limit: k={k_upper_bound})...")
 
-    while k <= max_k:
+    while k <= k_upper_bound:
         if k == lower_bound or k % 10 == 0:
             print(f"Attempting randomized greedy solve for k={k} ({num_attempts} attempts)...")
         for _ in range(num_attempts):
@@ -174,5 +175,5 @@ def find_feasible_k_labeling(tent_size: int, max_k_multiplier=20, num_attempts=1
                 print(f"Heuristic search found a valid labeling with k={k} for n={tent_size}.")
                 return k, labeling
         k += 1
-    print(f"Heuristic search failed to find a solution for n={tent_size} within the k limit (k>{max_k}).")
+    print(f"Heuristic search failed to find a solution for n={tent_size} within the k limit (k>{k_upper_bound}).")
     return None, None 

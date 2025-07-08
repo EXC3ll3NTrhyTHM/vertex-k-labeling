@@ -82,29 +82,29 @@ This task focuses on renaming functions, parameters, and variables to follow Pyt
   - [x] Update all references within function
 
 #### 1.2.2 Update `src/graph_properties.py` Parameters
-- [ ] In `calculate_graph_metrics`:
-  - [ ] Rename `graph` to `adjacency_list`
-  - [ ] Update all references within function
-- [ ] In `calculate_lower_bound`:
-  - [ ] Rename `n` to `tent_size`
-  - [ ] Update all references within function
+- [x] In `calculate_graph_metrics`:
+  - [x] Rename `graph` to `adjacency_list`
+  - [x] Update all references within function
+- [x] In `calculate_lower_bound`:
+  - [x] Rename `n` to `tent_size`
+  - [x] Update all references within function
 
 #### 1.2.3 Update `src/graph_generator.py` Parameters
-- [ ] In `create_mongolian_tent_graph`:
-  - [ ] Rename `n` to `tent_size`
-  - [ ] Update all references within function
+- [x] In `create_mongolian_tent_graph`:
+  - [x] Rename `n` to `tent_size`
+  - [x] Update all references within function
 
 #### 1.2.4 Update Local Variables
-- [ ] In `is_labeling_valid`:
-  - [ ] Rename `u, v` to `source_vertex, target_vertex` in edge contexts
-  - [ ] Update all references
-- [ ] In `find_feasible_k_labeling`:
-  - [ ] Rename `max_k` to `k_upper_bound`
-  - [ ] Update all references
-- [ ] In `greedy_k_labeling`:
-  - [ ] Rename `lbl` to `label_value` (if present)
-  - [ ] Update all references
-- [ ] Rename `nbrs` (in edge loops) to `neighbors`
+- [x] In `is_labeling_valid`:
+  - [x] Rename `u, v` to `source_vertex, target_vertex` in edge contexts
+  - [x] Update all references
+- [x] In `find_feasible_k_labeling`:
+  - [x] Rename `max_k` to `k_upper_bound`
+  - [x] Update all references
+- [x] In `greedy_k_labeling`:
+  - [x] Rename `lbl` to `label_value`
+  - [x] Update all references
+- [x] Rename `nbrs` (in edge loops) to `neighbors`
 
 ### 1.3 Add Meaningful Constants
 
@@ -125,10 +125,10 @@ This task focuses on renaming functions, parameters, and variables to follow Pyt
   - [x] Replace `"heuristic"` with `DEFAULT_SOLVER_TYPE`
 
 #### 1.3.3 Update `src/labeling_solver.py` to use constants
-- [ ] Import constants from `src.constants`
-- [ ] Replace hardcoded values:
-  - [ ] Replace `20` with `MAX_K_MULTIPLIER_DEFAULT`
-  - [ ] Replace `100` with `GREEDY_ATTEMPTS_DEFAULT`
+- [x] Import constants from `src.constants`
+- [x] Replace hardcoded values:
+  - [x] Replace `20` with `MAX_K_MULTIPLIER_DEFAULT`
+  - [x] Replace `100` with `GREEDY_ATTEMPTS_DEFAULT`
 
 ### 1.4 Update All Import Statements
 

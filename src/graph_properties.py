@@ -19,20 +19,20 @@ def calculate_graph_metrics(adjacency_list):
     
     return edge_count, max_degree
 
-def calculate_lower_bound(n):
+def calculate_lower_bound(tent_size):
     """
     Calculates the theoretical lower bound for k for a Mongolian Tent Graph.
 
     Args:
-        n (int): The parameter n for the Mongolian Tent Graph.
+        tent_size (int): The size parameter for the Mongolian Tent Graph.
 
     Returns:
         int: The theoretical lower bound for k.
     """
-    if n <= 0:
+    if tent_size <= 0:
         return 0
     
-    graph = create_mongolian_tent_graph(n)
+    graph = create_mongolian_tent_graph(tent_size)
     edge_count, max_degree = calculate_graph_metrics(graph)
     
     # Lower bound formula: k >= max(ceil((|E(G)| + 1) / 2), delta(G))
