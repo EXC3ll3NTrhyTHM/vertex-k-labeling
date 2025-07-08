@@ -45,6 +45,7 @@ def visualize_labeling(
 
     fmt = Path(output).suffix.lstrip(".") or "png"
     dest_path = Path(output)
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
 
     dot = Digraph(format=fmt)
     if shaped:

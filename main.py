@@ -26,8 +26,8 @@ def main():
         # --- Visualization Example ---
         try:
             from src.visualization import visualize_labeling
-            visualize_labeling(graph, labeling, output=f"mt3_{n}_heuristic.png")
-            print(f"Visualization saved to mt3_{n}_heuristic.png")
+            visualize_labeling(graph, labeling, output=f"graphs/mt3_{n}_heuristic.png")
+            print(f"Visualization saved to graphs/mt3_{n}_heuristic.png")
         except ImportError:
             print("Graphviz not installed; skipping visualization.")
     else:
