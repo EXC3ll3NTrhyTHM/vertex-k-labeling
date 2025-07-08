@@ -10,7 +10,7 @@ try:
 except ImportError as e:  # pragma: no cover
     raise ImportError("Graphviz python package is required. Install via `pip install graphviz`." ) from e
 
-from src.labeling_solver import _is_valid_assignment  # for optional validation
+from src.labeling_solver import is_labeling_valid  # for optional validation
 
 __all__ = ["visualize_labeling"]
 
@@ -51,7 +51,7 @@ def visualize_labeling(
         Path to the generated file.
     """
     if validate:
-        assert _is_valid_assignment(graph, labeling), "Labeling is not valid (duplicate edge weights)."
+        assert is_labeling_valid(graph, labeling), "Labeling is not valid (duplicate edge weights)."
 
     fmt = Path(output).suffix.lstrip(".") or "png"
     dest_path = Path(output)
@@ -135,14 +135,14 @@ def visualize_labeling(
 if __name__ == "__main__":  # pragma: no cover
     import argparse
     from src.graph_generator import generate_mongolian_tent_graph
-    from src.labeling_solver import find_minimum_k_labeling
+    from src.labeling_solver import find_optimal_k_labeling
 
     parser = argparse.ArgumentParser(description="Visualize Mongolian Tent graph labeling.")
     parser.add_argument("n", type=int, help="Value of n for MT_{3,n}")
     parser.add_argument("--file", default="graph.png", help="Output image file (extension decides format)")
     args = parser.parse_args()
 
-    k, labeling = find_minimum_k_labeling(args.n)
+    k, labeling = find_optimal_k_labeling(args.n)
     graph = generate_mongolian_tent_graph(args.n)
     out = visualize_labeling(graph, labeling, output=args.file)
     print(f"Graph rendered to {out.resolve()}") 

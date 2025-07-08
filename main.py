@@ -1,6 +1,6 @@
 from src.graph_generator import generate_mongolian_tent_graph
 from src.graph_properties import calculate_lower_bound
-from src.labeling_solver import find_heuristic_labeling
+from src.labeling_solver import find_feasible_k_labeling, find_optimal_k_labeling
 import json
 import time
 import argparse
@@ -15,7 +15,7 @@ def main():
     args = parser.parse_args()
 
     n = args.n
-    solver_type = "backtracking"
+    solver_type = args.solver
 
     print(f"Finding a {solver_type} k-labeling for Mongolian Tent graph with n = {n}")
 
@@ -23,7 +23,7 @@ def main():
     
     start_time = time.time()
     if solver_type == "heuristic":
-        k, labeling = find_heuristic_labeling(n)
+        k, labeling = find_feasible_k_labeling(n)
         lower_bound = calculate_lower_bound(n)
         if isinstance(k, int) and isinstance(lower_bound, int):
             gap = k - lower_bound
@@ -31,8 +31,7 @@ def main():
             gap = 'N/A'
         solver_name = "Heuristic"
     elif solver_type == "backtracking":
-        from src.labeling_solver import find_minimum_k_labeling # Import here to avoid circular dependency if not used
-        k, labeling = find_minimum_k_labeling(n)
+        k, labeling = find_optimal_k_labeling(n)
         lower_bound = k # For backtracking, the found k is the lower bound
         gap = 0 # For backtracking, the gap is 0 as it finds the minimum
         solver_name = "Backtracking"

@@ -1,7 +1,7 @@
 from src.graph_generator import generate_mongolian_tent_graph
 from src.graph_properties import calculate_lower_bound
 
-def _is_valid_assignment(graph, labeling, last_vertex=None):
+def is_labeling_valid(graph, labeling, last_vertex=None):
     """
     Checks if the assignment for the last labeled vertex is valid.
     If last_vertex is None, it checks the entire graph.
@@ -49,7 +49,7 @@ def _is_valid_assignment(graph, labeling, last_vertex=None):
                     weights.add(weight)
     return True
 
-def backtracking_solver(graph, k, labeling, vertices_to_label):
+def _backtrack_k_labeling(graph, k, labeling, vertices_to_label):
     """
     Recursively finds a valid k-labeling using backtracking.
     """
@@ -63,8 +63,8 @@ def backtracking_solver(graph, k, labeling, vertices_to_label):
         labeling[vertex_to_label] = label
         
         # After assigning a label, check if the partial labeling is valid
-        if _is_valid_assignment(graph, labeling):
-            result = backtracking_solver(graph, k, labeling, remaining_vertices)
+        if is_labeling_valid(graph, labeling):
+            result = _backtrack_k_labeling(graph, k, labeling, remaining_vertices)
             if result is not None:
                 return result # Found a solution
 
@@ -72,7 +72,7 @@ def backtracking_solver(graph, k, labeling, vertices_to_label):
     del labeling[vertex_to_label]
     return None
 
-def find_minimum_k_labeling(n):
+def find_optimal_k_labeling(n):
     """
     Finds the minimum k and a valid labeling for the Mongolian Tent Graph MT_3,n.
     """
@@ -105,13 +105,13 @@ def find_minimum_k_labeling(n):
 
     while True:
         print(f"Attempting to find a valid labeling for k = {k}...")
-        labeling = backtracking_solver(graph, k, {}, vertices)
+        labeling = _backtrack_k_labeling(graph, k, {}, vertices)
         if labeling is not None:
             print(f"Found a valid labeling for k = {k}")
             return k, labeling
         k += 1 
 
-def greedy_labeling_solver(graph, max_k):
+def greedy_k_labeling(graph, max_k):
     """
     Attempts to find a valid labeling using a randomized greedy approach.
     It shuffles the order of vertices and labels to explore different search paths.
@@ -132,7 +132,7 @@ def greedy_labeling_solver(graph, max_k):
         found_label = False
         for label in labels:
             labeling[vertex] = label
-            if _is_valid_assignment(graph, labeling, last_vertex=vertex):
+            if is_labeling_valid(graph, labeling, last_vertex=vertex):
                 found_label = True
                 break # Found a valid label
         
@@ -142,7 +142,7 @@ def greedy_labeling_solver(graph, max_k):
             
     return labeling
 
-def find_heuristic_labeling(n: int, max_k_multiplier=20, num_attempts=100):
+def find_feasible_k_labeling(n: int, max_k_multiplier=20, num_attempts=100):
     """
     Finds a feasible, but not necessarily minimal, k-labeling for large n
     by running a randomized greedy solver multiple times.
@@ -174,7 +174,7 @@ def find_heuristic_labeling(n: int, max_k_multiplier=20, num_attempts=100):
             print(f"Attempting randomized greedy solve for k={k} ({num_attempts} attempts)...")
 
         for _ in range(num_attempts):
-            labeling = greedy_labeling_solver(graph, k)
+            labeling = greedy_k_labeling(graph, k)
             if labeling:
                 print(f"Heuristic search found a valid labeling with k={k} for n={n}.")
                 return k, labeling
