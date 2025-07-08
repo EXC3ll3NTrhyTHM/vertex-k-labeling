@@ -89,18 +89,19 @@ def find_minimum_k_labeling(n):
     # Attempt to find a greedy labeling to set an initial upper bound for k
     # We start with the current k (lower bound) and try to find a greedy solution.
     # If found, this provides an upper limit for k, potentially reducing search space.
-    greedy_k = k
-    greedy_labeling = None
-    while greedy_labeling is None and greedy_k <= 2 * k: # Limit greedy search to avoid infinite loops for unlabelable graphs
-        greedy_labeling = greedy_labeling_solver(graph, greedy_k)
-        if greedy_labeling is None:
-            greedy_k += 1
+    # REMOVED: This section was causing the backtracking solver to start from a potentially suboptimal k.
+    # greedy_k = k
+    # greedy_labeling = None
+    # while greedy_labeling is None and greedy_k <= 2 * k: # Limit greedy search to avoid infinite loops for unlabelable graphs
+    #     greedy_labeling = greedy_labeling_solver(graph, greedy_k)
+    #     if greedy_labeling is None:
+    #         greedy_k += 1
     
-    if greedy_labeling is not None:
-        print(f"Greedy labeling found for k = {greedy_k}. Starting backtracking from this k.")
-        k = greedy_k # Start backtracking from this potentially higher k
-    else:
-        print("No greedy labeling found within reasonable bounds. Starting backtracking from lower bound.")
+    # if greedy_labeling is not None:
+    #     print(f"Greedy labeling found for k = {greedy_k}. Starting backtracking from this k.")
+    #     k = greedy_k # Start backtracking from this potentially higher k
+    # else:
+    #     print("No greedy labeling found within reasonable bounds. Starting backtracking from lower bound.")
 
     while True:
         print(f"Attempting to find a valid labeling for k = {k}...")

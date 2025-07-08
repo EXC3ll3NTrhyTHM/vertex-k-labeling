@@ -32,11 +32,15 @@ $ pip install -r requirements.txt
 #    • macOS:   brew install graphviz
 #    • Windows: download from graphviz.org and add the \bin directory to PATH
 
-# 5. Run the demo script (n=5 by default)
-$ python main.py
+# 5. Run the demo script
+#    For heuristic solver (default):
+#    n_value is optional and defaults to 5
+$ python main.py [--n <n_value>]
+#    For backtracking solver:
+$ python main.py --n <n_value> --solver backtracking
 ```
 
-The script prints a feasible *k* and saves a visualisation (`mt3_5_heuristic.png`, preview above).
+The script prints a feasible *k* and saves a visualisation (`mt3_<n>_heuristic.png` or `mt3_<n>_backtracking.png`).
 
 ---
 
@@ -94,4 +98,4 @@ vertex-k-labeling/
 
 ## Background
 
-A *k-labeling* assigns positive integers to vertices such that every edge weight (sum of the labels of its endpoints) is unique.  Computing the minimum viable *k* is NP-hard; our heuristic trades optimality for speed by performing many randomised greedy passes under an adaptive bound.
+A *k-labeling* assigns positive integers to vertices such that every edge weight (sum of the labels of its endpoints) is unique. Computing the minimum viable *k* is NP-hard; our heuristic trades optimality for speed by performing many randomised greedy passes under an adaptive bound.

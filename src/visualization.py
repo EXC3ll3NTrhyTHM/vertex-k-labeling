@@ -27,6 +27,11 @@ def visualize_labeling(
     validate: bool = False,
     *,
     shaped: bool = True,
+    heuristic_k: int | None = None,
+    lower_bound_k: int | None = None,
+    gap: int | str | None = None,
+    time_taken: float | None = None,
+    solver_name: str | None = None,
 ) -> Path:
     """Render the labeled graph to an image using Graphviz.
 
@@ -36,6 +41,11 @@ def visualize_labeling(
         output: path to output file (.png, .svg, etc.). Format inferred from extension.
         validate: if True, assert that the labeling has no duplicate edge weights.
         shaped: if True, use top-to-bottom flow and create clusters for top and bottom rows.
+        heuristic_k: the heuristic k value.
+        lower_bound_k: the lower bound k value.
+        gap: the gap between heuristic k and lower bound k.
+        time_taken: the time taken to find k.
+        solver_name: the name of the solver used (e.g., "Heuristic" or "Backtracking").
 
     Returns:
         Path to the generated file.
@@ -50,6 +60,22 @@ def visualize_labeling(
     dot = Digraph(format=fmt)
     if shaped:
         dot.attr(rankdir="TB")
+
+    # Add a global label for the graph with the k values
+    label_text = []
+    if solver_name is not None:
+        label_text.append(f"Solver: {solver_name}")
+    if heuristic_k is not None:
+        label_text.append(f"Heuristic K: {heuristic_k}")
+    if lower_bound_k is not None:
+        label_text.append(f"Lower Bound K: {lower_bound_k}")
+    if gap is not None:
+        label_text.append(f"Gap: {gap}")
+    if time_taken is not None:
+        label_text.append(f"Time Taken: {time_taken:.2f} seconds")
+
+    if label_text:
+        dot.attr(label="\n".join(label_text), labelloc="t", labeljust="l")
 
     dot.attr("node", shape="circle", style="filled", color="#D5E8D4")
 
@@ -69,7 +95,7 @@ def visualize_labeling(
             cluster = _G(name=f"row_{row_idx}")
             cluster.attr(rank="same", style="invis")
             for v in vertices:
-                cluster.node(_vertex_id(v), label=f"{v}\n{labeling[v]}")
+                cluster.node(_vertex_id(v), label=f"{labeling[v]}")
             # Add invisible edges between consecutive vertices to enforce ordering within the rank.
             for i in range(len(vertices) - 1):
                 cluster.edge(_vertex_id(vertices[i]), _vertex_id(vertices[i+1]), style="invis")
@@ -78,13 +104,13 @@ def visualize_labeling(
         # Apex vertex (top of the tent)
         if 'x' in labeling:
             apex_node = _vertex_id('x')
-            dot.node(apex_node, label=f"x\n{labeling['x']}")
+            dot.node(apex_node, label=f"{labeling['x']}")
             # Force apex to top rank explicitly.
             dot.subgraph(_G(name='apex', body=[apex_node], graph_attr={'rank': 'min'}))
     else:
         # Fallback simple node add
         for v, lbl in labeling.items():
-            dot.node(_vertex_id(v), label=f"{v}\n{lbl}")
+            dot.node(_vertex_id(v), label=f"{lbl}")
 
     # Add edges with weights
     added = set()
