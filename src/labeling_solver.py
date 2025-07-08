@@ -100,3 +100,46 @@ def greedy_labeling_solver(graph, max_k):
             return None # Cannot find a valid label for this vertex, backtrack
             
     return labeling 
+
+def find_heuristic_labeling(n: int, max_k_multiplier=5):
+    """
+    Finds a feasible, but not necessarily minimal, k-labeling for large n.
+
+    This function uses the greedy solver iteratively. It starts with the theoretical
+    lower bound for k and increases it until the greedy algorithm finds a valid
+    solution or a reasonable upper limit is reached.
+
+    Args:
+        n: The size parameter for the Mongolian Tent graph.
+        max_k_multiplier: The search will stop if k exceeds this multiple of the lower bound.
+
+    Returns:
+        A tuple (k, labeling) if a solution is found, otherwise (None, None).
+    """
+    if n <= 0:
+        return None, None
+
+    if max_k_multiplier < 1:
+        raise ValueError("max_k_multiplier must be at least 1")
+
+    graph = generate_mongolian_tent_graph(n)
+    lower_bound = calculate_lower_bound(n)
+    k = lower_bound
+    max_k = lower_bound * max_k_multiplier  # safety upper limit
+
+    print(f"\n[Heuristic Search] Starting search for n={n} from k={lower_bound} (limit: k={max_k})...")
+
+    while k <= max_k:
+        # Provide periodic feedback
+        if k == lower_bound or k % 10 == 0:
+            print(f"Attempting greedy solve for k={k}...")
+
+        labeling = greedy_labeling_solver(graph, k)
+        if labeling:
+            print(f"Heuristic search found a valid labeling with k={k} for n={n}.")
+            return k, labeling
+
+        k += 1
+
+    print(f"Heuristic search failed to find a solution for n={n} within the k limit (k>{max_k}).")
+    return None, None 
