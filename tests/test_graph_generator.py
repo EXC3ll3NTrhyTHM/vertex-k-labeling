@@ -1,6 +1,6 @@
 import unittest
 import collections
-from src.graph_generator import generate_ladder_graph, generate_mongolian_tent_graph
+from src.graph_generator import generate_ladder_graph, create_mongolian_tent_graph
 
 class TestGraphGenerator(unittest.TestCase):
 
@@ -41,13 +41,13 @@ class TestGraphGenerator(unittest.TestCase):
     def test_generate_mongolian_tent_graph_n0(self):
         """Test Mongolian Tent graph with n=0"""
         # For n=0, we expect an empty graph.
-        graph = generate_mongolian_tent_graph(0)
+        graph = create_mongolian_tent_graph(0)
         self.assertEqual(graph, collections.defaultdict(list))
 
     def test_generate_mongolian_tent_graph_n1(self):
         """Test Mongolian Tent graph with n=1"""
         # For n=1, the Mongolian Tent graph has a 3-vertex ladder (L_3,1) plus an apex 'x'.
-        graph = generate_mongolian_tent_graph(1)
+        graph = create_mongolian_tent_graph(1)
         expected_graph = collections.defaultdict(list)
         expected_graph[(1, 1)].extend([(2, 1), 'x'])
         expected_graph[(2, 1)].extend([(1, 1), (3, 1)])
@@ -63,7 +63,7 @@ class TestGraphGenerator(unittest.TestCase):
         """Test Mongolian Tent graph with n=2"""
         # For n=2, vertices = 3*2+1 = 7.
         # Edges = (5n-3) + n = 6n-3 = 9, so total degree = 18.
-        graph = generate_mongolian_tent_graph(2)
+        graph = create_mongolian_tent_graph(2)
         self.assertEqual(len(graph), 7)
         self.assertEqual(sum(len(v) for v in graph.values()), 18)
         # Check that the apex vertex 'x' exists and is connected to the top row vertices.

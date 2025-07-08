@@ -1,10 +1,32 @@
-from src.graph_generator import generate_mongolian_tent_graph
+from src.graph_generator import create_mongolian_tent_graph
 from src.graph_properties import calculate_lower_bound
+from typing import Any, Tuple, Union
+
+def _get_vertex_sort_key(v: Union[Tuple[int, int], str]) -> Tuple[int, str, str]:
+    if isinstance(v, tuple):
+        # (type_discriminator, row_as_str_padded, col_as_str_padded)
+        # Use zfill to ensure consistent lexicographical sorting for numbers
+        return (0, str(v[0]).zfill(3), str(v[1]).zfill(3)) # Assuming max 3 digits for row/col
+    elif v == 'x':
+        # (type_discriminator, padded_placeholder_str, padded_placeholder_str)
+        return (1, '000', '000') # Consistent padding for 'x', and matching length of other string parts
+    else:
+        # Fallback for any other unexpected vertex types, sorted by string
+        # (type_discriminator, string_representation_padded, empty_string_padding)
+        # Ensure the third element is also a string of consistent length
+        return (2, str(v).zfill(10), '000') # Make all tuples (int, str, str)
 
 def is_labeling_valid(graph, labeling, last_vertex=None):
     """
-    Checks if the assignment for the last labeled vertex is valid.
-    If last_vertex is None, it checks the entire graph.
+    Check if the current labeling is valid for the graph.
+
+    Args:
+        graph: adjacency list of the graph.
+        labeling: mapping of vertex -> label.
+        last_vertex: if provided, only validate edges incident on this vertex; otherwise, validate the entire graph.
+
+    Returns:
+        True if the labeling is valid (no duplicate edge weights), False otherwise.
     """
     if last_vertex is not None:
         # Check only the edges connected to the last labeled vertex
@@ -20,8 +42,8 @@ def is_labeling_valid(graph, labeling, last_vertex=None):
                 continue
             for v in neighbors:
                 if v != last_vertex and v in labeling:
-                    # Ensure consistent edge checking to avoid duplicates
-                    if str(u) < str(v):
+                    # Ensure consistent edge checking to avoid duplicates based on canonical vertex order
+                    if _get_vertex_sort_key(u) < _get_vertex_sort_key(v):
                         weights.add(labeling[u] + labeling[v])
         
         # Check new weights from the last vertex
@@ -40,9 +62,8 @@ def is_labeling_valid(graph, labeling, last_vertex=None):
             continue
         for v in neighbors:
             if v in labeling:
-                # To avoid double counting, only consider edges where u < v
-                # This requires a consistent way to compare vertices, so we convert to string
-                if str(u) < str(v):
+                # To avoid double counting, only consider edges where u < v based on canonical vertex order
+                if _get_vertex_sort_key(u) < _get_vertex_sort_key(v):
                     weight = labeling[u] + labeling[v]
                     if weight in weights:
                         return False
@@ -51,7 +72,16 @@ def is_labeling_valid(graph, labeling, last_vertex=None):
 
 def _backtrack_k_labeling(graph, k, labeling, vertices_to_label):
     """
-    Recursively finds a valid k-labeling using backtracking.
+    Recursively find a valid k-labeling using backtracking.
+
+    Args:
+        graph: adjacency list of the graph.
+        k: maximum label value to use.
+        labeling: current partial mapping of vertices to labels.
+        vertices_to_label: list of vertices remaining to label.
+
+    Returns:
+        A dict mapping vertices to labels if a complete valid labeling is found, otherwise None.
     """
     if not vertices_to_label:
         return labeling # Base case: all vertices are labeled
@@ -74,12 +104,18 @@ def _backtrack_k_labeling(graph, k, labeling, vertices_to_label):
 
 def find_optimal_k_labeling(n):
     """
-    Finds the minimum k and a valid labeling for the Mongolian Tent Graph MT_3,n.
+    Find the optimal (minimum) k and a valid labeling for the Mongolian Tent graph MT_3,n.
+
+    Args:
+        n: size parameter for the Mongolian Tent graph.
+
+    Returns:
+        A tuple (k, labeling) where k is the minimum label value for which a valid labeling exists and labeling is the mapping.
     """
     if n <= 0:
         return None, None
 
-    graph = generate_mongolian_tent_graph(n)
+    graph = create_mongolian_tent_graph(n)
     
     # Sort vertices by degree (descending) as a heuristic to prune the search space
     vertices = sorted(graph.keys(), key=lambda v: len(graph[v]), reverse=True)
@@ -113,8 +149,14 @@ def find_optimal_k_labeling(n):
 
 def greedy_k_labeling(graph, max_k):
     """
-    Attempts to find a valid labeling using a randomized greedy approach.
-    It shuffles the order of vertices and labels to explore different search paths.
+    Attempt to find a valid k-labeling using a randomized greedy approach for a given k.
+
+    Args:
+        graph: adjacency list of the graph.
+        max_k: maximum label value to try.
+
+    Returns:
+        A dict mapping vertices to labels if a valid labeling is found, otherwise None.
     """
     # Create a copy of the vertices list to shuffle
     vertices = list(graph.keys())
@@ -144,16 +186,15 @@ def greedy_k_labeling(graph, max_k):
 
 def find_feasible_k_labeling(n: int, max_k_multiplier=20, num_attempts=100):
     """
-    Finds a feasible, but not necessarily minimal, k-labeling for large n
-    by running a randomized greedy solver multiple times.
+    Find a feasible k-labeling for the Mongolian Tent graph using a heuristic search.
 
     Args:
-        n: The size parameter for the Mongolian Tent graph.
-        max_k_multiplier: The search for k will stop if it exceeds this multiple of the lower bound.
-        num_attempts: The number of times to run the randomized solver for each k.
+        n: the size parameter for the Mongolian Tent graph.
+        max_k_multiplier: multiplier to set an upper bound on k based on the lower bound.
+        num_attempts: number of randomized greedy attempts per k value.
 
     Returns:
-        A tuple (k, labeling) if a solution is found, otherwise (None, None).
+        A tuple (k, labeling) with a valid labeling found, or (None, None) if none is found within bounds.
     """
     if n <= 0:
         return None, None
@@ -161,7 +202,7 @@ def find_feasible_k_labeling(n: int, max_k_multiplier=20, num_attempts=100):
     if max_k_multiplier < 1:
         raise ValueError("max_k_multiplier must be at least 1")
 
-    graph = generate_mongolian_tent_graph(n)
+    graph = create_mongolian_tent_graph(n)
     lower_bound = calculate_lower_bound(n)
     k = lower_bound
     max_k = lower_bound * max_k_multiplier  # safety upper limit

@@ -18,43 +18,44 @@ This task focuses on renaming functions, parameters, and variables to follow Pyt
 ### 1.1 Function Renaming in Core Modules
 
 #### 1.1.1 Update `src/labeling_solver.py`
-- [ ] Rename `_is_valid_assignment` to `is_labeling_valid`
+- [x] Rename `_is_valid_assignment` to `is_labeling_valid`
   - [x] Update function definition
   - [x] Update all internal calls within the file
-  - [ ] Update docstring
-- [ ] Rename `find_minimum_k_labeling` to `find_optimal_k_labeling`
-  - [x] Update function definition
-  - [ ] Update docstring
-- [ ] Rename `greedy_labeling_solver` to `greedy_k_labeling`
+  - [x] Update docstring
+- [x] Rename `find_minimum_k_labeling` to `find_optimal_k_labeling`
   - [x] Update function definition
   - [x] Update all internal calls within the file
-  - [ ] Update docstring
-- [ ] Rename `backtracking_solver` to `_backtrack_k_labeling` (make private)
+  - [x] Update docstring
+- [x] Rename `greedy_labeling_solver` to `greedy_k_labeling`
   - [x] Update function definition
   - [x] Update all internal calls within the file
-  - [ ] Update docstring
-- [ ] Rename `find_heuristic_labeling` to `find_feasible_k_labeling`
+  - [x] Update docstring
+- [x] Rename `backtracking_solver` to `_backtrack_k_labeling` (make private)
   - [x] Update function definition
-  - [ ] Update docstring
+  - [x] Update all internal calls within the file
+  - [x] Update docstring
+- [x] Rename `find_heuristic_labeling` to `find_feasible_k_labeling`
+  - [x] Update function definition
+  - [x] Update docstring
 
 #### 1.1.2 Update `src/graph_properties.py`
-- [ ] Rename `get_graph_properties` to `calculate_graph_metrics`
-  - [ ] Update function definition
-  - [ ] Update all internal calls within the file
-  - [ ] Update docstring
+- [x] Rename `get_graph_properties` to `calculate_graph_metrics`
+  - [x] Update function definition
+  - [x] Update all internal calls within the file
+  - [x] Update docstring
 
 #### 1.1.3 Update `src/graph_generator.py`
-- [ ] Rename `generate_mongolian_tent_graph` to `create_mongolian_tent_graph`
-  - [ ] Update function definition
-  - [ ] Update docstring
+- [x] Rename `generate_mongolian_tent_graph` to `create_mongolian_tent_graph`
+  - [x] Update function definition
+  - [x] Update docstring
 
 #### 1.1.4 Update `src/visualization.py`
-- [ ] Rename helper `_vertex_id` to `format_vertex_id`
-  - [ ] Update function definition
-  - [ ] Update all calls to `_vertex_id` within the file
-- [ ] Rename `visualize_labeling` to `visualize_k_labeling`
-  - [ ] Update function definition and export in `__all__`
-  - [ ] Update calls in `main.py` and any other references
+- [x] Rename helper `_vertex_id` to `format_vertex_id`
+  - [x] Update function definition
+  - [x] Update all calls to `format_vertex_id` within the file
+- [x] Rename `visualize_labeling` to `visualize_k_labeling`
+  - [x] Update function definition and export in `__all__`
+  - [x] Update calls in `main.py` and any other references
 
 ### 1.2 Parameter and Variable Renaming
 
@@ -108,8 +109,8 @@ This task focuses on renaming functions, parameters, and variables to follow Pyt
 ### 1.3 Add Meaningful Constants
 
 #### 1.3.1 Create constants file `src/constants.py`
-- [ ] Create new file `src/constants.py`
-- [ ] Add the following constants:
+- [x] Create new file `src/constants.py`
+- [x] Add the following constants:
   ```python
   DEFAULT_TENT_SIZE = 5
   DEFAULT_SOLVER_TYPE = "heuristic"
@@ -118,10 +119,10 @@ This task focuses on renaming functions, parameters, and variables to follow Pyt
   ```
 
 #### 1.3.2 Update `main.py` to use constants
-- [ ] Import constants from `src.constants`
-- [ ] Replace hardcoded values with constants:
-  - [ ] Replace `5` with `DEFAULT_TENT_SIZE`
-  - [ ] Replace `"heuristic"` with `DEFAULT_SOLVER_TYPE`
+- [x] Import constants from `src.constants`
+- [x] Replace hardcoded values with constants:
+  - [x] Replace `5` with `DEFAULT_TENT_SIZE`
+  - [x] Replace `"heuristic"` with `DEFAULT_SOLVER_TYPE`
 
 #### 1.3.3 Update `src/labeling_solver.py` to use constants
 - [ ] Import constants from `src.constants`
@@ -132,23 +133,23 @@ This task focuses on renaming functions, parameters, and variables to follow Pyt
 ### 1.4 Update All Import Statements
 
 #### 1.4.1 Update `main.py`
-- [ ] Update import: `from src.labeling_solver import find_feasible_k_labeling` and `find_optimal_k_labeling`
-- [ ] Update function calls to use `find_feasible_k_labeling` (heuristic), `find_optimal_k_labeling` (backtracking)
-- [ ] Update import and calls for visualization: `from src.visualization import visualize_k_labeling` and replace calls to `visualize_labeling`
-- [ ] Add import: `from src.constants import DEFAULT_TENT_SIZE, DEFAULT_SOLVER_TYPE`
+- [x] Update import: `from src.labeling_solver import find_feasible_k_labeling` and `find_optimal_k_labeling`
+- [x] Update function calls to use `find_feasible_k_labeling` (heuristic), `find_optimal_k_labeling` (backtracking)
+- [x] Update import and calls for visualization: `from src.visualization import visualize_k_labeling` and replace calls to `visualize_labeling`
+- [x] Add import: `from src.constants import DEFAULT_TENT_SIZE, DEFAULT_SOLVER_TYPE`
 
 #### 1.4.2 Update `src/labeling_solver.py`
-- [ ] Update import: `from src.graph_generator import create_mongolian_tent_graph`
+- [x] Update import: `from src.graph_generator import create_mongolian_tent_graph`
 - [ ] Add import: `from src.constants import MAX_K_MULTIPLIER_DEFAULT, GREEDY_ATTEMPTS_DEFAULT`
 
 #### 1.4.3 Update `src/graph_properties.py`
-- [ ] Update import: `from src.graph_generator import create_mongolian_tent_graph`
+- [x] Update import: `from src.graph_generator import create_mongolian_tent_graph`
 
 #### 1.4.4 Update `src/visualization.py`
-- [ ] Update import: `from src.labeling_solver import is_labeling_valid`
-- [ ] Update function export in `__all__` to `visualize_k_labeling`
-- [ ] Update calls inside `visualize_k_labeling`: replace `_is_valid_assignment` with `is_labeling_valid` and rename any references accordingly
-- [ ] Rename helper calls: update all `format_vertex_id` references
+- [x] Update import: `from src.labeling_solver import is_labeling_valid`
+- [x] Update function export in `__all__` to `visualize_k_labeling`
+- [x] Update calls inside `visualize_k_labeling`: replace `_is_valid_assignment` with `is_labeling_valid` and rename any references accordingly
+- [x] Rename helper calls: update all `format_vertex_id` references
 
 ### 1.5 Update Docstrings and Type Hints
 

@@ -1,21 +1,21 @@
-from src.graph_generator import generate_mongolian_tent_graph
+from src.graph_generator import create_mongolian_tent_graph
 import math
 
-def get_graph_properties(graph):
+def calculate_graph_metrics(adjacency_list):
     """
-    Calculates the number of edges and the maximum degree of a graph.
+    Calculate the number of edges and the maximum degree of a graph.
 
     Args:
-        graph (dict): The graph represented as an adjacency list.
+        adjacency_list (dict): The graph represented as an adjacency list.
 
     Returns:
         tuple: A tuple containing the number of edges and the maximum degree.
     """
-    if not graph:
+    if not adjacency_list:
         return 0, 0
 
-    edge_count = sum(len(v) for v in graph.values()) // 2
-    max_degree = max(len(v) for v in graph.values()) if graph else 0
+    edge_count = sum(len(neighbors) for neighbors in adjacency_list.values()) // 2
+    max_degree = max(len(neighbors) for neighbors in adjacency_list.values()) if adjacency_list else 0
     
     return edge_count, max_degree
 
@@ -32,8 +32,8 @@ def calculate_lower_bound(n):
     if n <= 0:
         return 0
     
-    graph = generate_mongolian_tent_graph(n)
-    edge_count, max_degree = get_graph_properties(graph)
+    graph = create_mongolian_tent_graph(n)
+    edge_count, max_degree = calculate_graph_metrics(graph)
     
     # Lower bound formula: k >= max(ceil((|E(G)| + 1) / 2), delta(G))
     lower_bound_k = max(math.ceil((edge_count + 1) / 2), max_degree)

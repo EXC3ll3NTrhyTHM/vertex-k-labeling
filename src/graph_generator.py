@@ -28,19 +28,25 @@ def generate_ladder_graph(n):
 
     return graph
 
-def generate_mongolian_tent_graph(n):
+def create_mongolian_tent_graph(tent_size):
     """
-    Generates a Mongolian Tent graph MT_{3,n} for a given integer n.
+    Generate a Mongolian Tent graph MT_{3,n} for a given integer tent_size.
+
+    Args:
+        tent_size (int): number of columns in the tent graph.
+
+    Returns:
+        adjacency list of the Mongolian Tent graph.
     """
-    if n <= 0:
+    if tent_size <= 0:
         return collections.defaultdict(list)
 
-    graph = generate_ladder_graph(n)
+    graph = generate_ladder_graph(tent_size)
     apex_vertex = 'x'
 
     # Add the apex vertex and connect it to the top row vertices
     graph[apex_vertex] = []
-    for i in range(1, n + 1):
+    for i in range(1, tent_size + 1):
         top_vertex = (1, i)
         graph[apex_vertex].append(top_vertex)
         graph[top_vertex].append(apex_vertex)

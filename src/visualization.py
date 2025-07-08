@@ -12,15 +12,15 @@ except ImportError as e:  # pragma: no cover
 
 from src.labeling_solver import is_labeling_valid  # for optional validation
 
-__all__ = ["visualize_labeling"]
+__all__ = ["visualize_k_labeling"]
 
 
-def _vertex_id(v: Any) -> str:
+def format_vertex_id(v: Any) -> str:
     """Return a stable string representation for vertex IDs usable in DOT."""
     return str(v).replace(" ", "")
 
 
-def visualize_labeling(
+def visualize_k_labeling(
     graph: Dict[Any, list],
     labeling: Dict[Any, int],
     output: str = "graph.png",
@@ -95,22 +95,22 @@ def visualize_labeling(
             cluster = _G(name=f"row_{row_idx}")
             cluster.attr(rank="same", style="invis")
             for v in vertices:
-                cluster.node(_vertex_id(v), label=f"{labeling[v]}")
+                cluster.node(format_vertex_id(v), label=f"{labeling[v]}")
             # Add invisible edges between consecutive vertices to enforce ordering within the rank.
             for i in range(len(vertices) - 1):
-                cluster.edge(_vertex_id(vertices[i]), _vertex_id(vertices[i+1]), style="invis")
+                cluster.edge(format_vertex_id(vertices[i]), format_vertex_id(vertices[i+1]), style="invis")
             dot.subgraph(cluster)
 
         # Apex vertex (top of the tent)
         if 'x' in labeling:
-            apex_node = _vertex_id('x')
+            apex_node = format_vertex_id('x')
             dot.node(apex_node, label=f"{labeling['x']}")
             # Force apex to top rank explicitly.
             dot.subgraph(_G(name='apex', body=[apex_node], graph_attr={'rank': 'min'}))
     else:
         # Fallback simple node add
         for v, lbl in labeling.items():
-            dot.node(_vertex_id(v), label=f"{lbl}")
+            dot.node(format_vertex_id(v), label=f"{lbl}")
 
     # Add edges with weights
     added = set()
@@ -122,10 +122,10 @@ def visualize_labeling(
             added.add((u, v))
             if u in labeling and v in labeling:
                 weight = labeling[u] + labeling[v]
-                dot.edge(_vertex_id(u), _vertex_id(v), label=str(weight))
+                dot.edge(format_vertex_id(u), format_vertex_id(v), label=str(weight))
             else:
                 # fallback no label
-                dot.edge(_vertex_id(u), _vertex_id(v))
+                dot.edge(format_vertex_id(u), format_vertex_id(v))
 
     # Write file
     rendered_path = Path(dot.render(filename=dest_path.stem, directory=dest_path.parent, cleanup=True))
@@ -134,7 +134,7 @@ def visualize_labeling(
 
 if __name__ == "__main__":  # pragma: no cover
     import argparse
-    from src.graph_generator import generate_mongolian_tent_graph
+    from src.graph_generator import create_mongolian_tent_graph
     from src.labeling_solver import find_optimal_k_labeling
 
     parser = argparse.ArgumentParser(description="Visualize Mongolian Tent graph labeling.")
@@ -143,6 +143,6 @@ if __name__ == "__main__":  # pragma: no cover
     args = parser.parse_args()
 
     k, labeling = find_optimal_k_labeling(args.n)
-    graph = generate_mongolian_tent_graph(args.n)
-    out = visualize_labeling(graph, labeling, output=args.file)
+    graph = create_mongolian_tent_graph(args.n)
+    out = visualize_k_labeling(graph, labeling, output=args.file)
     print(f"Graph rendered to {out.resolve()}") 

@@ -1,12 +1,12 @@
 import unittest
-from src.graph_properties import get_graph_properties, calculate_lower_bound
-from src.graph_generator import generate_ladder_graph, generate_mongolian_tent_graph
+from src.graph_properties import calculate_graph_metrics, calculate_lower_bound
+from src.graph_generator import generate_ladder_graph, create_mongolian_tent_graph
 
 class TestGraphProperties(unittest.TestCase):
 
     def test_get_graph_properties_empty(self):
         """Test with an empty graph"""
-        edge_count, max_degree = get_graph_properties({})
+        edge_count, max_degree = calculate_graph_metrics({})
         self.assertEqual(edge_count, 0)
         self.assertEqual(max_degree, 0)
 
@@ -14,16 +14,16 @@ class TestGraphProperties(unittest.TestCase):
         """Test with a ladder graph L_3"""
         graph = generate_ladder_graph(3)
         # L_3 (3 rows) has 12 edges and max degree 4 (middle row vertices)
-        edge_count, max_degree = get_graph_properties(graph)
+        edge_count, max_degree = calculate_graph_metrics(graph)
         self.assertEqual(edge_count, 12)
         self.assertEqual(max_degree, 4)
 
     def test_get_graph_properties_mongolian_tent_graph(self):
         """Test with a Mongolian Tent graph MT_3,3"""
-        graph = generate_mongolian_tent_graph(3)
+        graph = create_mongolian_tent_graph(3)
         # MT_3,3 now has 15 edges (12 from L_3 + 3 apex)
         # Max degree remains 4 (apex)
-        edge_count, max_degree = get_graph_properties(graph)
+        edge_count, max_degree = calculate_graph_metrics(graph)
         self.assertEqual(edge_count, 15)
         self.assertEqual(max_degree, 4)
 
