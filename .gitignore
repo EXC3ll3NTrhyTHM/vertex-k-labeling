@@ -1,0 +1,54 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Packages and build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+.nosetests*
+.pytest_cache/
+.hypothesis/
+
+# mypy / pylint / other static analysis
+.mypy_cache/
+.pylint.d/
+
+# Jupyter notebooks
+*.ipynb
+
+# Images generated at runtime (keep committed examples manually)
+mt3_*.png
+
+# OS / editor swaps
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE configuration files
+.vscode/
+.idea/
+*.iml 
