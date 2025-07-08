@@ -1,5 +1,5 @@
 import unittest, time
-from src.labeling_solver import find_heuristic_labeling
+from src.labeling_solver import find_feasible_k_labeling
 
 class TestHeuristicSafetyLimit(unittest.TestCase):
 
@@ -7,7 +7,7 @@ class TestHeuristicSafetyLimit(unittest.TestCase):
         """With max_k_multiplier=1 on n=5, heuristic should return (None, None) quickly."""
         n = 5
         start = time.perf_counter()
-        k, labeling = find_heuristic_labeling(n, max_k_multiplier=1)
+        k, labeling = find_feasible_k_labeling(n, max_k_multiplier=1)
         elapsed = time.perf_counter() - start
         self.assertIsNone(labeling)
         self.assertLessEqual(elapsed, 2.0)
@@ -16,7 +16,7 @@ class TestHeuristicSafetyLimit(unittest.TestCase):
         """With higher multiplier heuristic should eventually find labeling."""
         n = 5
         start = time.perf_counter()
-        k, labeling = find_heuristic_labeling(n, max_k_multiplier=10)
+        k, labeling = find_feasible_k_labeling(n, max_k_multiplier=10)
         elapsed = time.perf_counter() - start
         self.assertLessEqual(elapsed, 5.0)
         if labeling:

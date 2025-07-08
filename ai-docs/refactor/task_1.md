@@ -60,26 +60,26 @@ This task focuses on renaming functions, parameters, and variables to follow Pyt
 ### 1.2 Parameter and Variable Renaming
 
 #### 1.2.1 Update `src/labeling_solver.py` Parameters
-- [ ] In `is_labeling_valid`:
-  - [ ] Rename `graph` to `adjacency_list`
-  - [ ] Rename `labeling` to `vertex_labels`
-  - [ ] Update all references within function
-- [ ] In `find_optimal_k_labeling`:
-  - [ ] Rename `n` to `tent_size`
-  - [ ] Update all references within function
-- [ ] In `_backtrack_k_labeling`:
-  - [ ] Rename `graph` to `adjacency_list`
-  - [ ] Rename `labeling` to `vertex_labels`
-  - [ ] Rename `vertices_to_label` to `unlabeled_vertices`
-  - [ ] Rename `k` to `max_k_value`
-  - [ ] Update all references within function
-- [ ] In `greedy_k_labeling`:
-  - [ ] Rename `graph` to `adjacency_list`
-  - [ ] Rename `max_k` to `k_upper_bound`
-  - [ ] Update all references within function
-- [ ] In `find_feasible_k_labeling`:
-  - [ ] Rename `n` to `tent_size`
-  - [ ] Update all references within function
+- [x] In `is_labeling_valid`:
+  - [x] Rename `graph` to `adjacency_list`
+  - [x] Rename `labeling` to `vertex_labels`
+  - [x] Update all references within function
+- [x] In `find_optimal_k_labeling`:
+  - [x] Rename `n` to `tent_size`
+  - [x] Update all references within function
+- [x] In `_backtrack_k_labeling`:
+  - [x] Rename `graph` to `adjacency_list`
+  - [x] Rename `labeling` to `vertex_labels`
+  - [x] Rename `vertices_to_label` to `unlabeled_vertices`
+  - [x] Rename `k` to `max_k_value`
+  - [x] Update all references within function
+- [x] In `greedy_k_labeling`:
+  - [x] Rename `graph` to `adjacency_list`
+  - [x] Rename `max_k` to `k_upper_bound`
+  - [x] Update all references within function
+- [x] In `find_feasible_k_labeling`:
+  - [x] Rename `n` to `tent_size`
+  - [x] Update all references within function
 
 #### 1.2.2 Update `src/graph_properties.py` Parameters
 - [ ] In `calculate_graph_metrics`:
