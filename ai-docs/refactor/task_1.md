@@ -154,22 +154,22 @@ This task focuses on renaming functions, parameters, and variables to follow Pyt
 ### 1.5 Update Docstrings and Type Hints
 
 #### 1.5.1 Update `src/labeling_solver.py` docstrings
-- [ ] Update `is_labeling_valid` docstring with new parameter names
-- [ ] Update `find_optimal_k_labeling` docstring
-- [ ] Update `_backtrack_k_labeling` docstring
-- [ ] Update `greedy_k_labeling` docstring
-- [ ] Update `find_feasible_k_labeling` docstring
+- [x] Update `is_labeling_valid` docstring with new parameter names
+- [x] Update `find_optimal_k_labeling` docstring
+- [x] Update `_backtrack_k_labeling` docstring
+- [x] Update `greedy_k_labeling` docstring
+- [x] Update `find_feasible_k_labeling` docstring
 
 #### 1.5.2 Update `src/graph_properties.py` docstrings
-- [ ] Update `calculate_graph_metrics` docstring
-- [ ] Update `calculate_lower_bound` docstring
+- [x] Update `calculate_graph_metrics` docstring
+- [x] Update `calculate_lower_bound` docstring
 
 #### 1.5.3 Update `src/graph_generator.py` docstrings
-- [ ] Update `create_mongolian_tent_graph` docstring
+- [x] Update `create_mongolian_tent_graph` docstring
 
 #### 1.5.4 Add missing type hints
-- [ ] Add type hints to all updated functions
-- [ ] Ensure consistency across all modules
+- [x] Add type hints to all updated functions
+- [x] Ensure consistency across all modules
 
 ### 1.6 Verification and Testing
 

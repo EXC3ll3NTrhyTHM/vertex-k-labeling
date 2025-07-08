@@ -1,7 +1,9 @@
 from src.graph_generator import create_mongolian_tent_graph
 import math
+from typing import Dict, List, Any, Tuple
 
-def calculate_graph_metrics(adjacency_list):
+
+def calculate_graph_metrics(adjacency_list: Dict[Any, List[Any]]) -> Tuple[int, int]:
     """
     Calculate the number of edges and the maximum degree of a graph.
 
@@ -19,7 +21,7 @@ def calculate_graph_metrics(adjacency_list):
     
     return edge_count, max_degree
 
-def calculate_lower_bound(tent_size):
+def calculate_lower_bound(tent_size: int) -> int:
     """
     Calculates the theoretical lower bound for k for a Mongolian Tent Graph.
 

@@ -1,7 +1,7 @@
 from src.graph_generator import create_mongolian_tent_graph
 from src.graph_properties import calculate_lower_bound
 from src.constants import MAX_K_MULTIPLIER_DEFAULT, GREEDY_ATTEMPTS_DEFAULT
-from typing import Any, Tuple, Union
+from typing import Any, Tuple, Union, Dict, List, Optional
 
 def _get_vertex_sort_key(v: Union[Tuple[int, int], str]) -> Tuple[int, str, str]:
     if isinstance(v, tuple):
@@ -17,7 +17,7 @@ def _get_vertex_sort_key(v: Union[Tuple[int, int], str]) -> Tuple[int, str, str]
         # Ensure the third element is also a string of consistent length
         return (2, str(v).zfill(10), '000') # Make all tuples (int, str, str)
 
-def is_labeling_valid(adjacency_list, vertex_labels, last_vertex=None):
+def is_labeling_valid(adjacency_list: Dict[Any, List[Any]], vertex_labels: Dict[Any, int], last_vertex: Optional[Any] = None) -> bool:
     """
     Check if the current labeling is valid for the graph.
 
@@ -64,7 +64,7 @@ def is_labeling_valid(adjacency_list, vertex_labels, last_vertex=None):
                 weights.add(weight)
     return True
 
-def _backtrack_k_labeling(adjacency_list, max_k_value, vertex_labels, unlabeled_vertices):
+def _backtrack_k_labeling(adjacency_list: Dict[Any, List[Any]], max_k_value: int, vertex_labels: Dict[Any, int], unlabeled_vertices: List[Any]) -> Optional[Dict[Any, int]]:
     """
     Recursively find a valid k-labeling using backtracking.
 
@@ -94,7 +94,7 @@ def _backtrack_k_labeling(adjacency_list, max_k_value, vertex_labels, unlabeled_
     del vertex_labels[vertex_to_label]
     return None
 
-def find_optimal_k_labeling(tent_size):
+def find_optimal_k_labeling(tent_size: int) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
     """
     Find the optimal (minimum) k and a valid labeling for the Mongolian Tent graph MT_3,n.
 
@@ -120,7 +120,7 @@ def find_optimal_k_labeling(tent_size):
             return k, labeling
         k += 1
 
-def greedy_k_labeling(adjacency_list, k_upper_bound, attempts: int = GREEDY_ATTEMPTS_DEFAULT):
+def greedy_k_labeling(adjacency_list: Dict[Any, List[Any]], k_upper_bound: int, attempts: int = GREEDY_ATTEMPTS_DEFAULT) -> Optional[Dict[Any, int]]:
     """A more robust greedy solver that makes multiple randomized attempts."""
     import random
     for _ in range(attempts):
@@ -142,7 +142,7 @@ def greedy_k_labeling(adjacency_list, k_upper_bound, attempts: int = GREEDY_ATTE
             return vertex_labels
     return None
 
-def find_feasible_k_labeling(tent_size: int, max_k_multiplier=MAX_K_MULTIPLIER_DEFAULT, num_attempts=GREEDY_ATTEMPTS_DEFAULT):
+def find_feasible_k_labeling(tent_size: int, max_k_multiplier: int = MAX_K_MULTIPLIER_DEFAULT, num_attempts: int = GREEDY_ATTEMPTS_DEFAULT) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
     """
     Find a feasible k-labeling for the Mongolian Tent graph using a heuristic search.
 

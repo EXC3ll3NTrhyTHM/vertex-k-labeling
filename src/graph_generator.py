@@ -1,4 +1,6 @@
 import collections
+from typing import Dict, List, Any
+
 
 def generate_ladder_graph(n):
     """
@@ -28,7 +30,8 @@ def generate_ladder_graph(n):
 
     return graph
 
-def create_mongolian_tent_graph(tent_size):
+
+def create_mongolian_tent_graph(tent_size: int) -> Dict[Any, List[Any]]:
     """
     Generate a Mongolian Tent graph MT_{3,n} for a given integer tent_size.
 
