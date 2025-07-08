@@ -1,4 +1,4 @@
-# Enhancement 02: Add Graphviz-Based Visualization
+# Enhancement 01: Add Graphviz-Based Visualization
 
 ## Objective
 
