@@ -1,5 +1,7 @@
 # Enhancement: CP-SAT Solver for Optimal k-Labeling
 
+Only good for providing proof, takes significantly longer to run. Also requires specific version of python(Python 3.11)
+
 ## 1 · Motivation / Problem Statement
 
 Our current toolkit offers two solvers:

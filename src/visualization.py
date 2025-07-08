@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, Any, Tuple
 
 try:
-    from graphviz import Digraph  # type: ignore
+    from graphviz import Graph  # type: ignore
 except ImportError as e:  # pragma: no cover
     raise ImportError("Graphviz python package is required. Install via `pip install graphviz`." ) from e
 
@@ -57,7 +57,8 @@ def visualize_k_labeling(
     dest_path = Path(output)
     dest_path.parent.mkdir(parents=True, exist_ok=True)
 
-    dot = Digraph(format=fmt)
+    # Use an undirected Graph to remove arrowheads in the rendered output.
+    dot = Graph(format=fmt)
     if shaped:
         dot.attr(rankdir="TB")
 
@@ -82,7 +83,8 @@ def visualize_k_labeling(
     if shaped:
         # Create horizontal clusters for each ladder row (row index = first element in tuple vertex)
         # Supports arbitrary number of rows; for the Mongolian Tent graph we expect 3.
-        from graphviz import Digraph as _G
+        # Sub-graphs must match the parent graph type, so we also use Graph here.
+        from graphviz import Graph as _G
 
         # Group vertices by their row index.
         row_to_vertices = {}
@@ -144,5 +146,7 @@ if __name__ == "__main__":  # pragma: no cover
 
     k, labeling = find_optimal_k_labeling(args.n)
     graph = create_mongolian_tent_graph(args.n)
+    if labeling is None:
+        raise RuntimeError("Failed to find a valid labeling to visualize.")
     out = visualize_k_labeling(graph, labeling, output=args.file)
     print(f"Graph rendered to {out.resolve()}") 
