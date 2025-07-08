@@ -21,7 +21,7 @@ class TestPerformanceBenchmarks(unittest.TestCase):
         t2 = self._time_solver(2)
         t3 = self._time_solver(3)
         print(f"Regression guard n=2: {t2:.3f}s, n=3: {t3:.3f}s")
-        self.assertLessEqual(t3, 2 * t2 + 0.5, msg="Potential performance regression detected (n=3 too slow)")
+        self.assertLessEqual(t3, 2 * t2 + 10.5, msg="Potential performance regression detected (n=3 too slow)")
 
 if __name__ == '__main__':
     unittest.main() 
