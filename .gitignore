@@ -38,9 +38,6 @@ htmlcov/
 # Jupyter notebooks
 *.ipynb
 
-# Images generated at runtime (keep committed examples manually)
-mt3_*.png
-
 # OS / editor swaps
 .DS_Store
 Thumbs.db
