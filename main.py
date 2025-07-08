@@ -32,6 +32,14 @@ def main():
         serializable_labeling = {str(k): v for k, v in labeling.items()}
         print("Valid labeling:")
         print(json.dumps(serializable_labeling, indent=4, sort_keys=True))
+
+        # --- Visualization Example ---
+        try:
+            from src.visualization import visualize_labeling
+            visualize_labeling(graph, labeling, output=f"mt3_{n}.png")
+            print(f"Visualization saved to mt3_{n}.png")
+        except ImportError:
+            print("Graphviz not installed; skipping visualization.")
     else:
         print(f"Could not find a valid labeling for n = {n}")
 
