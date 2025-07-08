@@ -11,7 +11,7 @@ Provide a clear, visual representation of Mongolian Tent graphs **with their com
 ## High-Level Overview
 
 - [ ] **Dependencies**
-  - [ ] System-level: Ensure Graphviz binaries are installed (e.g., `brew install graphviz`, `apt-get install graphviz`, or Windows installer).
+  - [x] System-level: Ensure Graphviz binaries are installed (e.g., `brew install graphviz`, `apt-get install graphviz`, or Windows installer).
   - [x] Python: Add `graphviz` package to the project (`pip install graphviz`).
 
 - [x] **New Module – `src/visualization.py`**
