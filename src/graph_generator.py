@@ -13,17 +13,18 @@ def generate_ladder_graph(n):
 
     graph = collections.defaultdict(list)
 
-    # Add horizontal edges for the top and bottom rows
+    # Add horizontal edges for the three rows
     for i in range(1, n):
-        graph[(1, i)].append((1, i + 1))
-        graph[(1, i + 1)].append((1, i))
-        graph[(2, i)].append((2, i + 1))
-        graph[(2, i + 1)].append((2, i))
+        for row in (1, 2, 3):
+            graph[(row, i)].append((row, i + 1))
+            graph[(row, i + 1)].append((row, i))
 
-    # Add vertical "rung" edges
+    # Add vertical rungs between rows 1↔2 and 2↔3
     for i in range(1, n + 1):
         graph[(1, i)].append((2, i))
         graph[(2, i)].append((1, i))
+        graph[(2, i)].append((3, i))
+        graph[(3, i)].append((2, i))
 
     return graph
 

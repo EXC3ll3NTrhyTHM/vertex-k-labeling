@@ -25,6 +25,8 @@ def visualize_labeling(
     labeling: Dict[Any, int],
     output: str = "graph.png",
     validate: bool = False,
+    *,
+    shaped: bool = True,
 ) -> Path:
     """Render the labeled graph to an image using Graphviz.
 
@@ -33,6 +35,7 @@ def visualize_labeling(
         labeling: mapping of vertex -> label (k value).
         output: path to output file (.png, .svg, etc.). Format inferred from extension.
         validate: if True, assert that the labeling has no duplicate edge weights.
+        shaped: if True, use top-to-bottom flow and create clusters for top and bottom rows.
 
     Returns:
         Path to the generated file.
@@ -44,11 +47,43 @@ def visualize_labeling(
     dest_path = Path(output)
 
     dot = Digraph(format=fmt)
+    if shaped:
+        dot.attr(rankdir="TB")
+
     dot.attr("node", shape="circle", style="filled", color="#D5E8D4")
 
-    # Add nodes
-    for v, lbl in labeling.items():
-        dot.node(_vertex_id(v), label=f"{v}\n{lbl}")
+    if shaped:
+        # Create horizontal clusters for each ladder row (row index = first element in tuple vertex)
+        # Supports arbitrary number of rows; for the Mongolian Tent graph we expect 3.
+        from graphviz import Digraph as _G
+
+        # Group vertices by their row index.
+        row_to_vertices = {}
+        for v in labeling:
+            if isinstance(v, tuple):
+                row_to_vertices.setdefault(v[0], []).append(v)
+
+        for row_idx in sorted(row_to_vertices):
+            vertices = sorted(row_to_vertices[row_idx], key=lambda x: x[1])
+            cluster = _G(name=f"row_{row_idx}")
+            cluster.attr(rank="same", style="invis")
+            for v in vertices:
+                cluster.node(_vertex_id(v), label=f"{v}\n{labeling[v]}")
+            # Add invisible edges between consecutive vertices to enforce ordering within the rank.
+            for i in range(len(vertices) - 1):
+                cluster.edge(_vertex_id(vertices[i]), _vertex_id(vertices[i+1]), style="invis")
+            dot.subgraph(cluster)
+
+        # Apex vertex (top of the tent)
+        if 'x' in labeling:
+            apex_node = _vertex_id('x')
+            dot.node(apex_node, label=f"x\n{labeling['x']}")
+            # Force apex to top rank explicitly.
+            dot.subgraph(_G(name='apex', body=[apex_node], graph_attr={'rank': 'min'}))
+    else:
+        # Fallback simple node add
+        for v, lbl in labeling.items():
+            dot.node(_vertex_id(v), label=f"{v}\n{lbl}")
 
     # Add edges with weights
     added = set()

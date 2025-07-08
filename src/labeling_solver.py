@@ -1,10 +1,39 @@
 from src.graph_generator import generate_mongolian_tent_graph
 from src.graph_properties import calculate_lower_bound
 
-def _is_valid_assignment(graph, labeling):
+def _is_valid_assignment(graph, labeling, last_vertex=None):
     """
-    Checks if the current partial labeling has any duplicate edge weights.
+    Checks if the assignment for the last labeled vertex is valid.
+    If last_vertex is None, it checks the entire graph.
     """
+    if last_vertex is not None:
+        # Check only the edges connected to the last labeled vertex
+        if last_vertex not in labeling:
+            return True # Should not happen if called correctly
+        
+        last_label = labeling[last_vertex]
+        weights = set()
+
+        # Collect weights from the rest of the graph
+        for u, neighbors in graph.items():
+            if u == last_vertex or u not in labeling:
+                continue
+            for v in neighbors:
+                if v != last_vertex and v in labeling:
+                    # Ensure consistent edge checking to avoid duplicates
+                    if str(u) < str(v):
+                        weights.add(labeling[u] + labeling[v])
+        
+        # Check new weights from the last vertex
+        for neighbor in graph[last_vertex]:
+            if neighbor in labeling:
+                weight = last_label + labeling[neighbor]
+                if weight in weights:
+                    return False
+                weights.add(weight)
+        return True
+
+    # Original full check if last_vertex is not specified
     weights = set()
     for u, neighbors in graph.items():
         if u not in labeling:
@@ -83,35 +112,44 @@ def find_minimum_k_labeling(n):
 
 def greedy_labeling_solver(graph, max_k):
     """
-    Attempts to find a valid labeling greedily for a given max_k.
-    Returns a labeling if found, otherwise None.
+    Attempts to find a valid labeling using a randomized greedy approach.
+    It shuffles the order of vertices and labels to explore different search paths.
     """
+    # Create a copy of the vertices list to shuffle
+    vertices = list(graph.keys())
+    # Introduce randomness in vertex processing order
+    import random
+    random.shuffle(vertices)
+    
     labeling = {}
-    vertices = sorted(graph.keys(), key=lambda v: len(graph[v]), reverse=True)
     
     for vertex in vertices:
+        # Introduce randomness in label selection order
+        labels = list(range(1, max_k + 1))
+        random.shuffle(labels)
+        
         found_label = False
-        for label in range(1, max_k + 1):
+        for label in labels:
             labeling[vertex] = label
-            if _is_valid_assignment(graph, labeling):
+            if _is_valid_assignment(graph, labeling, last_vertex=vertex):
                 found_label = True
-                break
+                break # Found a valid label
+        
         if not found_label:
-            return None # Cannot find a valid label for this vertex, backtrack
+            # If no label can be assigned to this vertex, this path has failed
+            return None
             
-    return labeling 
+    return labeling
 
-def find_heuristic_labeling(n: int, max_k_multiplier=5):
+def find_heuristic_labeling(n: int, max_k_multiplier=20, num_attempts=100):
     """
-    Finds a feasible, but not necessarily minimal, k-labeling for large n.
-
-    This function uses the greedy solver iteratively. It starts with the theoretical
-    lower bound for k and increases it until the greedy algorithm finds a valid
-    solution or a reasonable upper limit is reached.
+    Finds a feasible, but not necessarily minimal, k-labeling for large n
+    by running a randomized greedy solver multiple times.
 
     Args:
         n: The size parameter for the Mongolian Tent graph.
-        max_k_multiplier: The search will stop if k exceeds this multiple of the lower bound.
+        max_k_multiplier: The search for k will stop if it exceeds this multiple of the lower bound.
+        num_attempts: The number of times to run the randomized solver for each k.
 
     Returns:
         A tuple (k, labeling) if a solution is found, otherwise (None, None).
@@ -132,12 +170,13 @@ def find_heuristic_labeling(n: int, max_k_multiplier=5):
     while k <= max_k:
         # Provide periodic feedback
         if k == lower_bound or k % 10 == 0:
-            print(f"Attempting greedy solve for k={k}...")
+            print(f"Attempting randomized greedy solve for k={k} ({num_attempts} attempts)...")
 
-        labeling = greedy_labeling_solver(graph, k)
-        if labeling:
-            print(f"Heuristic search found a valid labeling with k={k} for n={n}.")
-            return k, labeling
+        for _ in range(num_attempts):
+            labeling = greedy_labeling_solver(graph, k)
+            if labeling:
+                print(f"Heuristic search found a valid labeling with k={k} for n={n}.")
+                return k, labeling
 
         k += 1
 

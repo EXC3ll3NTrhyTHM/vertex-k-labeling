@@ -42,14 +42,18 @@ where:
 #### **Ladder Graph \( L_n \)**
 
 - **Vertices**:  
-  - {(1, i), (2, i)} for i = 1 to n  
+  - {(1, i), (2, i), (3, i)} for i = 1 to n  
   - (1, i) = top row vertex in column i  
-  - (2, i) = bottom row vertex in column i
+  - (2, i) = *middle* row vertex in column i  
+  - (3, i) = bottom row vertex in column i
 
 - **Edges**:  
   - Horizontal top row: ((1, i), (1, i+1)) for i = 1 to n-1  
-  - Horizontal bottom row: ((2, i), (2, i+1)) for i = 1 to n-1  
-  - Vertical rungs: ((1, i), (2, i)) for i = 1 to n
+  - Horizontal middle row: ((2, i), (2, i+1)) for i = 1 to n-1  
+  - Horizontal bottom row: ((3, i), (3, i+1)) for i = 1 to n-1  
+  - Vertical rungs:  
+    - ((1, i), (2, i)) for i = 1 to n  
+    - ((2, i), (3, i)) for i = 1 to n
 
 ---
 
@@ -80,29 +84,32 @@ where:
 
 - **Vertices**:  
   - Top row: (1,1), (1,2), (1,3)  
-  - Bottom row: (2,1), (2,2), (2,3)  
+  - Middle row: (2,1), (2,2), (2,3)
+  - Bottom row: (3,1), (3,2), (3,3)  
   - Apex: x
 
 - **Edges**:  
   - Horizontal top: (1,1)-(1,2), (1,2)-(1,3)  
-  - Horizontal bottom: (2,1)-(2,2), (2,2)-(2,3)  
-  - Vertical rungs: (1,1)-(2,1), (1,2)-(2,2), (1,3)-(2,3)  
+  - Horizontal middle: (2,1)-(2,2), (2,2)-(2,3)  
+  - Horizontal bottom: (3,1)-(3,2), (3,2)-(3,3)  
+  - Vertical rungs (top→middle): (1,1)-(2,1), (1,2)-(2,2), (1,3)-(2,3)  
+  - Vertical rungs (middle→bottom): (2,1)-(3,1), (2,2)-(3,2), (2,3)-(3,3)  
   - Apex connections: x-(1,1), x-(1,2), x-(1,3)
 
-- **Total edges |E(G)|** = 9  
-- **Maximum degree Δ(G)** = 4 (apex vertex x has degree 3 + top row vertices with apex edge)
+- **Total edges |E(G)|** = 15  
+- **Maximum degree Δ(G)** = 4
 
 ### **Lower bound calculation**
 
 \[
-\frac{|E(G)| + 1}{2} = \frac{9 + 1}{2} = 5
+\frac{|E(G)| + 1}{2} = \frac{15 + 1}{2} = 8
 \]
 
 \[
 \Delta(G) = 4
 \]
 
-Hence, **lower bound k ≥ max{5,4} = 5**.
+Hence, **lower bound k ≥ max{8,4} = 8**.
 
 ---
 
