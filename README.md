@@ -95,9 +95,3 @@ vertex-k-labeling/
 ## Background
 
 A *k-labeling* assigns positive integers to vertices such that every edge weight (sum of the labels of its endpoints) is unique.  Computing the minimum viable *k* is NP-hard; our heuristic trades optimality for speed by performing many randomised greedy passes under an adaptive bound.
-
----
-
-## License
-
-This project is released under the MIT License.  See `LICENSE` for details. 
