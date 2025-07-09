@@ -160,6 +160,6 @@ The `ai-docs/` folder contains detailed design discussions, task breakdowns and 
 | 📐 Initial design | [Master plan](ai-docs/initial-design/master_plan.md), [Task 1](ai-docs/initial-design/task_1.md), [Task 2](ai-docs/initial-design/task_2.md), [Task 3](ai-docs/initial-design/task_3.md), [Task 4](ai-docs/initial-design/task_4.md), [Task 5](ai-docs/initial-design/task_5.md) |
 | ⚙️ Algorithms | [Heuristic algorithm overview](ai-docs/algorithms/heuristic_algorithm.md) |
 | 🚀 Enhancements | [Parallelism & Profiling](ai-docs/enhancments/enhancement_parallelism_profiling.md), [CP-SAT solver](ai-docs/enhancments/enhancement_CP-SAT_solver.md), [Add visualisation](ai-docs/enhancments/enhancment01_add_visualization.md), [Shape-graph support](ai-docs/enhancments/enhancement02_shape_graph.md) |
-| 🛠️ Fixes | [Incorrect ladder levels](ai-docs/fixes/fix_incorrect_ladder_levels.md), [Large-n solution strategy](ai-docs/fixes/large_n_solution.md), [Greedy solver inefficiency optimization](ai-docs/fixes/fix_greedy_inefficiency.md), [Optimize Backtracking Edge-Weight Validation Performance](ai-docs/fixes/fix_backtracking_performance.md) |
+| 🛠️ Fixes | [Incorrect ladder levels](ai-docs/fixes/fix_incorrect_ladder_levels.md), [Large-n solution strategy](ai-docs/fixes/large_n_solution.md), [Greedy solver inefficiency optimization](ai-docs/fixes/fix_greedy_inefficiency.md), [Optimize Backtracking Performance](ai-docs/fixes/fix_backtracking_performance.md) |
 
 These notes outline the project’s evolution and provide context for future contributors.
