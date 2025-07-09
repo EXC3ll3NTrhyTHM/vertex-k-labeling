@@ -78,7 +78,10 @@ def _backtrack_k_labeling(adjacency_list: Dict[Any, List[Any]], max_k_value: int
         A dict mapping vertices to labels if a complete valid labeling is found, otherwise None.
     """
     if not unlabeled_vertices:
-        return vertex_labels  # Base case: all vertices are labeled
+        # Base case: all vertices are labeled — verify full validity before accepting
+        if is_labeling_valid(adjacency_list, vertex_labels):
+            return vertex_labels
+        return None
 
     vertex_to_label = unlabeled_vertices[0]
     remaining_vertices = unlabeled_vertices[1:]
@@ -134,7 +137,7 @@ def find_optimal_k_labeling(tent_size: int) -> Tuple[Optional[int], Optional[Dic
         # Start backtracking with a bit-array mask for possible edge weights (0..2*k)
         used_weights = [False] * (2 * k + 1)
         labeling = _backtrack_k_labeling(adjacency_list, k, {}, vertices, used_weights)
-        if labeling is not None:
+        if labeling is not None and is_labeling_valid(adjacency_list, labeling):
             print(f"Found a valid labeling for k = {k}")
             return k, labeling
         k += 1
@@ -173,7 +176,10 @@ def greedy_k_labeling(adjacency_list: Dict[Any, List[Any]], k_upper_bound: int, 
                 success = False
                 break
         if success:
-            return vertex_labels
+            # Verify the final labeling is truly valid (no duplicate edge weights)
+            if is_labeling_valid(adjacency_list, vertex_labels):
+                return vertex_labels
+            # Otherwise, discard and continue attempts
     return None
 
 # --------------------
@@ -261,7 +267,7 @@ def find_feasible_k_labeling(
 
             # 1) Deterministic first-fit pass (very quick)
             labeling = _first_fit_greedy_k_labeling(adjacency_list, k)
-            if labeling:
+            if labeling and is_labeling_valid(adjacency_list, labeling):
                 print(f"Fast heuristic found a valid labeling with k={k} for n={tent_size} on deterministic pass.")
                 return k, labeling
 
@@ -269,7 +275,7 @@ def find_feasible_k_labeling(
             passes = max(2, min(10, tent_size // 2))  # e.g., n=5 ⇒ 2 passes, n=20 ⇒ 10 passes cap.
             for _ in range(passes):
                 labeling = greedy_k_labeling(adjacency_list, k, attempts=1)
-                if labeling:
+                if labeling and is_labeling_valid(adjacency_list, labeling):
                     print(
                         f"Fast heuristic found a valid labeling with k={k} for n={tent_size} after randomized pass."
                     )
@@ -278,7 +284,7 @@ def find_feasible_k_labeling(
             if k == lower_bound or k % 10 == 0:
                 print(f"Attempting randomized greedy solve for k={k} ({num_attempts} attempts)...")
             labeling = greedy_k_labeling(adjacency_list, k, attempts=num_attempts)
-            if labeling:
+            if labeling and is_labeling_valid(adjacency_list, labeling):
                 print(f"Heuristic search found a valid labeling with k={k} for n={tent_size}.")
                 return k, labeling
         k += 1
