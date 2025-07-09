@@ -54,4 +54,41 @@ def create_mongolian_tent_graph(tent_size: int) -> Dict[Any, List[Any]]:
         graph[apex_vertex].append(top_vertex)
         graph[top_vertex].append(apex_vertex)
 
+    return graph
+
+
+def generate_circulant_graph(n: int, r: int) -> Dict[int, List[int]]:
+    """
+    Generate a circulant graph by removing edges from the complete circulant K_n to reduce each vertex's degree by 5.
+
+    Only valid for even n ≥ 6. It removes generators s=1,2,n/2 in that order.
+    Final degree = (n-1) - 5 = n - 6.
+
+    Args:
+        n (int): number of vertices (5 ≤ n ≤ 50).
+        r (int): ignored.
+
+    Returns:
+        adjacency list mapping vertex id to list of neighbor ids; empty for invalid inputs.
+    """
+    # Validate n even and sufficient size
+    if not (6 <= n <= 50 and n % 2 == 0):
+        return collections.defaultdict(list)
+    graph = collections.defaultdict(list)
+    half = n // 2
+    # Step 1: build complete circulant K_n adjacency
+    for s in range(1, half + 1):
+        for i in range(n):
+            j = (i + s) % n
+            graph[i].append(j)
+            graph[j].append(i)
+    # Step 2: remove closest neighbor edges first
+    for s in (1, 2, half):
+        for i in range(n):
+            j = (i + s) % n
+            # remove edge i<->j if exists
+            if j in graph[i]:
+                graph[i].remove(j)
+            if i in graph[j]:
+                graph[j].remove(i)
     return graph 

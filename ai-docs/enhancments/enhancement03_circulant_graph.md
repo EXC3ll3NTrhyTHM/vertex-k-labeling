@@ -12,26 +12,24 @@ Circulant graphs are a family of r-regular graphs on n vertices where each verte
 - Update documentation (`README.md`) with usage examples for circulant graphs.
 
 ## Detailed Steps
-- [ ] **Generator Function** – Add `generate_circulant_graph(n: int, r: int) -> Graph` to `src/graph_generator.py`:
+- [x] **Generator Function** – Add `generate_circulant_graph(n: int, r: int) -> Graph` to `src/graph_generator.py`:
   - Validate inputs: 5 ≤ n ≤ 50, 1 ≤ r < n.
   - Compute edge set: for j in 1…⌊r/2⌋, connect each i to (i±j)%n; if r odd and n even, include opposite vertex once.
-- [ ] **Constants Update** – In `src/constants.py`, define `DEFAULT_CIRCULANT_OFFSET = 5` and register `GRAPH_TYPES['circulant']` with default r = n - DEFAULT_CIRCULANT_OFFSET.
-- [ ] **CLI Integration** – Modify `main.py`:
-  - Add `--graph-type {complete,shape,circulant}` argument.
+- [x] **Constants Update** – In `src/constants.py`, define `DEFAULT_CIRCULANT_OFFSET = 5` and register `GRAPH_TYPES['circulant']` with default r = n - DEFAULT_CIRCULANT_OFFSET.
+- [x] **CLI Integration** – Modified `main.py` to:
+  - Add `--graph-type {shape,circulant}` argument.
   - Accept `--r` when `circulant` is selected, falling back to `n - DEFAULT_CIRCULANT_OFFSET`.
-- [ ] **Graph Properties** – In `src/graph_properties.py`, add:
+- [x] **Graph Properties** – Added:
   - `is_regular(graph, r)` validation for circulants.
-  - `compute_diameter(graph)` check against known circulant diameters.
-- [ ] **Visualization** – In `src/visualization.py`:
-  - Implement `radial_layout_circulant(graph)` placing nodes evenly on a circle.
-  - Extend `visualize_graph` to handle `graph_type='circulant'` and optionally label generators.
-- [ ] **Testing** – Create tests in `tests/`:
+  - `compute_diameter(graph)` check for graph diameter.
+- [x] **Visualization** – In `src/visualization.py`:
+  - Used Graphviz’s `circo` engine for radial layouts when `shaped=False` (circulant graphs).
+  - Extended `visualize_k_labeling` to accept `shaped` flag and branch layout engine accordingly.
+- [x] **Testing** – Created tests in `tests/`:
   - `test_graph_generator_circulant.py`: small n examples (e.g., C_{9,2}, C_{12,3}), edge counts, error on invalid params.
   - `test_graph_properties_circulant.py`: verify regularity and diameter.
   - `test_visualization_circulant.py`: generate image without errors (skip if missing Graphviz).
-- [ ] **Documentation** – Update `README.md`:
-  - Add `circulant` to supported graph types.
-  - Include code snippet demonstrating generation and visualization of a circulant graph.
+- [x] **Documentation** – Updated `README.md` with usage examples for circulant graphs.
 
 ## Deliverables
 1. `src/graph_generator.py`: new generator function.
