@@ -146,17 +146,32 @@ def greedy_k_labeling(adjacency_list: Dict[Any, List[Any]], k_upper_bound: int, 
         vertices = list(adjacency_list.keys())
         random.shuffle(vertices)
         vertex_labels: dict = {}
+        # Initialize used_weights bit-array for incremental conflict checks
+        used_weights = [False] * (2 * k_upper_bound + 1)
         success = True
         for vertex in vertices:
             labels = list(range(1, k_upper_bound + 1))
             random.shuffle(labels)
+            assigned = False
             for label in labels:
-                vertex_labels[vertex] = label
-                if is_labeling_valid(adjacency_list, vertex_labels, last_vertex=vertex):
+                temp_weights: List[int] = []
+                conflict = False
+                for neighbor in adjacency_list[vertex]:
+                    if neighbor in vertex_labels:
+                        weight = label + vertex_labels[neighbor]
+                        if used_weights[weight]:
+                            conflict = True
+                            break
+                        temp_weights.append(weight)
+                if not conflict:
+                    vertex_labels[vertex] = label
+                    for w in temp_weights:
+                        used_weights[w] = True
+                    assigned = True
                     break
-            else:
+            if not assigned:
                 success = False
-                break  # Failed for this vertex; try a new overall ordering
+                break
         if success:
             return vertex_labels
     return None
@@ -183,16 +198,27 @@ def _first_fit_greedy_k_labeling(
     vertices = sorted(adjacency_list.keys(), key=lambda v: len(adjacency_list[v]), reverse=True)
 
     vertex_labels: Dict[Any, int] = {}
+    # Initialize used_weights bit-array for incremental conflict checks
+    used_weights = [False] * (2 * k_upper_bound + 1)
     for vertex in vertices:
         assigned = False
         for label in range(1, k_upper_bound + 1):
-            vertex_labels[vertex] = label
-            # Validate only the newly assigned vertex to keep this fast.
-            if is_labeling_valid(adjacency_list, vertex_labels, last_vertex=vertex):
+            temp_weights: List[int] = []
+            conflict = False
+            for neighbor in adjacency_list[vertex]:
+                if neighbor in vertex_labels:
+                    weight = label + vertex_labels[neighbor]
+                    if used_weights[weight]:
+                        conflict = True
+                        break
+                    temp_weights.append(weight)
+            if not conflict:
+                vertex_labels[vertex] = label
+                for w in temp_weights:
+                    used_weights[w] = True
                 assigned = True
                 break
         if not assigned:
-            # Failed to find a label within bound ⇒ give up for this k.
             return None
     return vertex_labels
 
