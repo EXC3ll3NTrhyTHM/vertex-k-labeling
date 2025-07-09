@@ -58,7 +58,9 @@ def visualize_k_labeling(
     dest_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Use an undirected Graph to remove arrowheads in the rendered output.
-    dot = Graph(format=fmt)
+    # Use 'dot' engine for shaped (Mongolian Tent) layouts and 'circo' for circulant radial layouts
+    engine = "dot" if shaped else "neato"
+    dot = Graph(format=fmt, engine=engine)
     if shaped:
         dot.attr(rankdir="TB")
 
@@ -110,9 +112,18 @@ def visualize_k_labeling(
             # Force apex to top rank explicitly.
             dot.subgraph(_G(name='apex', body=[apex_node], graph_attr={'rank': 'min'}))
     else:
-        # Fallback simple node add
-        for v, label_value in labeling.items():
-            dot.node(format_vertex_id(v), label=f"{label_value}")
+        # For circulant graphs (shaped=False), explicitly order nodes in a circle.
+        # Assumes nodes are integers 0 to n-1.
+        import math
+        node_ids = sorted([v for v in graph.keys() if isinstance(v, int)])
+        n_nodes = len(node_ids)
+        radius = 2.0  # arbitrary radius
+        for idx, v in enumerate(node_ids):
+            angle = 2 * math.pi * idx / n_nodes
+            x = radius * math.cos(angle)
+            y = radius * math.sin(angle)
+            # pos attribute with ! to fix position
+            dot.node(format_vertex_id(v), label=str(v), pos=f"{x},{y}!")
 
     # Add edges with weights
     added = set()

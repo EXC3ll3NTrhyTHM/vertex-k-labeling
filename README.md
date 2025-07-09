@@ -42,6 +42,8 @@ $ python main.py [--n <n_value>]  # accurate mode
 $ python main.py --n <n_value> --heuristic_mode fast
 #    For backtracking solver:
 $ python main.py --n <n_value> --solver backtracking
+#    Circulant graph generation:
+$ python main.py --graph-type circulant --n <n_value> --r <r_value>
 ```
 
 The script prints a feasible *k* and saves a visualisation (`mt3_<n>_heuristic_<mode>.png` or `mt3_<n>_backtracking.png`).
@@ -78,6 +80,11 @@ Choose `fast` when you need a quick, “good-enough” result (e.g., exploratory
 ```python
 from src.graph_generator import generate_mongolian_tent_graph
 G = generate_mongolian_tent_graph(n=8)
+```
+
+```python
+from src.graph_generator import generate_circulant_graph
+G = generate_circulant_graph(n=12, r=5)
 ```
 
 ### Finding a labeling
