@@ -64,7 +64,7 @@ def is_labeling_valid(adjacency_list: Dict[Any, List[Any]], vertex_labels: Dict[
                 weights.add(weight)
     return True
 
-def _backtrack_k_labeling(adjacency_list: Dict[Any, List[Any]], max_k_value: int, vertex_labels: Dict[Any, int], unlabeled_vertices: List[Any]) -> Optional[Dict[Any, int]]:
+def _backtrack_k_labeling(adjacency_list: Dict[Any, List[Any]], max_k_value: int, vertex_labels: Dict[Any, int], unlabeled_vertices: List[Any], used_weights: List[bool]) -> Optional[Dict[Any, int]]:
     """
     Recursively find a valid k-labeling using backtracking.
 
@@ -85,11 +85,28 @@ def _backtrack_k_labeling(adjacency_list: Dict[Any, List[Any]], max_k_value: int
 
     for label in range(1, max_k_value + 1):
         vertex_labels[vertex_to_label] = label
-        # Validate only edges incident to the newly labeled vertex—much cheaper
-        if is_labeling_valid(adjacency_list, vertex_labels, last_vertex=vertex_to_label):
-            result = _backtrack_k_labeling(adjacency_list, max_k_value, vertex_labels, remaining_vertices)
+        new_weights: List[int] = []
+        conflict = False
+        for neighbor in adjacency_list[vertex_to_label]:
+            if neighbor in vertex_labels:
+                weight = label + vertex_labels[neighbor]
+                # Check against bit-array mask
+                if weight < len(used_weights) and used_weights[weight]:
+                    conflict = True
+                    break
+                new_weights.append(weight)
+        if not conflict:
+            # Mark new weights in bit-array mask
+            for w in new_weights:
+                used_weights[w] = True
+
+            # Recurse with updated weights
+            result = _backtrack_k_labeling(adjacency_list, max_k_value, vertex_labels, remaining_vertices, used_weights)
             if result is not None:
                 return result  # Found a solution
+            # Backtrack bit-array flags
+            for w in new_weights:
+                used_weights[w] = False
     # Backtrack if no valid label was found
     del vertex_labels[vertex_to_label]
     return None
@@ -114,7 +131,9 @@ def find_optimal_k_labeling(tent_size: int) -> Tuple[Optional[int], Optional[Dic
 
     while True:
         print(f"Attempting to find a valid labeling for k = {k}...")
-        labeling = _backtrack_k_labeling(adjacency_list, k, {}, vertices)
+        # Start backtracking with a bit-array mask for possible edge weights (0..2*k)
+        used_weights = [False] * (2 * k + 1)
+        labeling = _backtrack_k_labeling(adjacency_list, k, {}, vertices, used_weights)
         if labeling is not None:
             print(f"Found a valid labeling for k = {k}")
             return k, labeling
