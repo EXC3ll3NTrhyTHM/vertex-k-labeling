@@ -1,3 +1,14 @@
+"""K-labeling solvers for Mongolian Tent graphs and related structures.
+
+Provides exact backtracking solver and several greedy/heuristic approaches
+(deterministic first-fit, randomized multi-attempt, and hybrid fast mode).
+
+References:
+    - ai-docs/algorithms/backtracking_algorithm.md (exact solver description)
+    - ai-docs/algorithms/heuristic_algorithm.md (greedy strategies and rationale)
+    - ai-docs/fixes/fix_backtracking_performance.md (optimization notes)
+    - ai-docs/enhancments/enhancement01_Task_1.md (solver feature roadmap)
+"""
 from src.graph_generator import create_mongolian_tent_graph
 from src.graph_properties import calculate_lower_bound
 from src.constants import MAX_K_MULTIPLIER_DEFAULT, GREEDY_ATTEMPTS_DEFAULT
@@ -28,6 +39,10 @@ def is_labeling_valid(adjacency_list: Dict[Any, List[Any]], vertex_labels: Dict[
 
     Returns:
         True if the labeling is valid (no duplicate edge weights), False otherwise.
+
+    References:
+        - ai-docs/algorithms/backtracking_algorithm.md (edge weight uniqueness definition)
+        - ai-docs/fixes/fix_greedy_inefficiency.md (incremental validation optimizations)
     """
     if last_vertex is not None:
         if last_vertex not in vertex_labels:
@@ -76,6 +91,10 @@ def _backtrack_k_labeling(adjacency_list: Dict[Any, List[Any]], max_k_value: int
 
     Returns:
         A dict mapping vertices to labels if a complete valid labeling is found, otherwise None.
+
+    References:
+        - ai-docs/algorithms/backtracking_algorithm.md (recursive algorithm pseudocode)
+        - ai-docs/fixes/fix_backtracking_performance.md (bit-array optimization)
     """
     if not unlabeled_vertices:
         # Base case: all vertices are labeled — verify full validity before accepting
@@ -123,6 +142,10 @@ def find_optimal_k_labeling(tent_size: int) -> Tuple[Optional[int], Optional[Dic
 
     Returns:
         A tuple (k, labeling) where k is the minimum label value for which a valid labeling exists and labeling is the mapping.
+
+    References:
+        - ai-docs/initial-design/task_2.md (exact solver deliverable)
+        - ai-docs/fixes/large_n_solution.md (scaling guidance for large n)
     """
     if tent_size <= 0:
         return None, None
@@ -143,7 +166,12 @@ def find_optimal_k_labeling(tent_size: int) -> Tuple[Optional[int], Optional[Dic
         k += 1
 
 def greedy_k_labeling(adjacency_list: Dict[Any, List[Any]], k_upper_bound: int, attempts: int = GREEDY_ATTEMPTS_DEFAULT) -> Optional[Dict[Any, int]]:
-    """A more robust greedy solver that makes multiple randomized attempts."""
+    """A more robust greedy solver that makes multiple randomized attempts.
+
+    References:
+        - ai-docs/algorithms/heuristic_algorithm.md (multi-attempt heuristic)
+        - ai-docs/fixes/fix_greedy_inefficiency.md (shuffle and attempt count tuning)
+    """
     import random
     for _ in range(attempts):
         vertices = list(adjacency_list.keys())
@@ -198,6 +226,9 @@ def _first_fit_greedy_k_labeling(
 
     This trades potentially higher k values for much faster runtimes
     compared to the randomized multi-attempt heuristic.
+
+    References:
+        - ai-docs/enhancments/enhancement01_Task_2.md (fast heuristic concept)
     """
 
     # Order vertices by degree (high -> low) to maximize early pruning.
@@ -245,6 +276,10 @@ def find_feasible_k_labeling(
 
     Returns:
         A tuple (k, labeling) with a valid labeling found, or (None, None) if none is found within bounds.
+
+    References:
+        - ai-docs/algorithms/heuristic_algorithm.md (search strategy)
+        - ai-docs/enhancments/enhancement01_Task_3.md (fast vs accurate modes)
     """
     if tent_size <= 0:
         return None, None

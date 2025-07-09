@@ -1,6 +1,11 @@
 """Graph visualization utilities for Mongolian Tent graphs.
 
 Requires the `graphviz` Python package and Graphviz binaries installed on the system.
+
+References:
+    - ai-docs/enhancments/enhancment01_add_visualization.md (initial visualization feature design)
+    - ai-docs/initial-design/task_4.md (task detailing visualization requirements)
+    - ai-docs/fixes/fix_backtracking_performance.md (context on visualization of performance results)
 """
 from pathlib import Path
 from typing import Dict, Any, Tuple
@@ -49,6 +54,10 @@ def visualize_k_labeling(
 
     Returns:
         Path to the generated file.
+
+    References:
+        - ai-docs/enhancments/enhancment01_add_visualization.md (visualization algorithm details)
+        - ai-docs/refactor/refactoring_task.md (notes on modularization of visualization utilities)
     """
     if validate:
         assert is_labeling_valid(graph, labeling), "Labeling is not valid (duplicate edge weights)."

@@ -9,6 +9,10 @@ def generate_ladder_graph(n):
     The graph is represented by an adjacency list (dictionary).
     Vertices are represented as tuples: (1, i) for the top row
     and (2, i) for the bottom row, where i is from 1 to n.
+
+    References:
+        - ai-docs/initial-design/task_1.md  (ladder graph generation requirements)
+        - ai-docs/initial-design/master_plan.md  (overall project architecture)
     """
     if n <= 0:
         return collections.defaultdict(list)
@@ -40,6 +44,10 @@ def create_mongolian_tent_graph(tent_size: int) -> Dict[Any, List[Any]]:
 
     Returns:
         adjacency list of the Mongolian Tent graph.
+
+    References:
+        - ai-docs/initial-design/task_1.md  (Mongolian Tent graph construction)
+        - ai-docs/initial-design/master_plan.md  (design overview of MT graphs)
     """
     if tent_size <= 0:
         return collections.defaultdict(list)
@@ -70,6 +78,10 @@ def generate_circulant_graph(n: int, r: int) -> Dict[int, List[int]]:
 
     Returns:
         adjacency list mapping vertex id to list of neighbor ids; empty for invalid inputs.
+
+    References:
+        - ai-docs/algorithms/circulant_graph_generation_algorithm.md  (circulant graph generation logic)
+        - ai-docs/enhancments/enhancement03_circulant_graph.md  (improvements and edge-removal strategy)
     """
     # Validate n even and sufficient size
     if not (6 <= n <= 50 and n % 2 == 0):

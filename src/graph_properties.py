@@ -4,6 +4,17 @@ from typing import Dict, List, Any, Tuple
 import collections
 
 
+"""
+Graph property calculations for Mongolian Tent and related graphs.
+
+Provides metrics such as edge count, maximum degree, theoretical lower bounds,
+regularity checks, and diameter estimates.
+
+References:
+    - ai-docs/algorithms/heuristic_algorithm.md (lower bound derivation)
+    - ai-docs/fixes/fix_greedy_inefficiency.md (context on degree metrics improvements)
+    - ai-docs/enhancments/enhancement02_shape_graph.md (diameter computation motivation)
+"""
 def calculate_graph_metrics(adjacency_list: Dict[Any, List[Any]]) -> Tuple[int, int]:
     """
     Calculate the number of edges and the maximum degree of a graph.
@@ -13,6 +24,10 @@ def calculate_graph_metrics(adjacency_list: Dict[Any, List[Any]]) -> Tuple[int, 
 
     Returns:
         tuple: A tuple containing the number of edges and the maximum degree.
+
+    References:
+        - ai-docs/algorithms/backtracking_algorithm.md (edge enumeration requirements)
+        - ai-docs/fixes/fix_greedy_inefficiency.md (performance considerations)
     """
     if not adjacency_list:
         return 0, 0
@@ -31,6 +46,10 @@ def calculate_lower_bound(tent_size: int) -> int:
 
     Returns:
         int: The theoretical lower bound for k.
+
+    References:
+        - ai-docs/algorithms/heuristic_algorithm.md (lower-bound formula)
+        - ai-docs/fixes/fix_incorrect_ladder_levels.md (boundary corrections)
     """
     if tent_size <= 0:
         return 0
@@ -46,6 +65,9 @@ def calculate_lower_bound(tent_size: int) -> int:
 def is_regular(adjacency_list: Dict[Any, List[Any]], r: int) -> bool:
     """
     Check if the graph is r-regular: every vertex has degree exactly r.
+
+    References:
+        - ai-docs/enhancments/enhancement_CP-SAT_solver.md (regularity constraints)
     """
     if not adjacency_list:
         return False
@@ -54,6 +76,9 @@ def is_regular(adjacency_list: Dict[Any, List[Any]], r: int) -> bool:
 def compute_diameter(adjacency_list: Dict[Any, List[Any]]) -> int:
     """
     Compute the diameter of the graph (longest shortest-path between any two vertices).
+
+    References:
+        - ai-docs/enhancments/enhancement02_shape_graph.md (use cases for diameter)
     """
     if not adjacency_list:
         return 0
