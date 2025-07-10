@@ -1,6 +1,6 @@
 # Mongolian Tent Graph k-Labeling
 
-![Mongolian Tent Graph n=5](graphs/mt3_5_backtracking.png)
+![Mongolian Tent Graph n=5](graphs/mt3_5_heuristic_accurate.png)
 
 A Python toolkit for exploring k-labelings of *Mongolian Tent* graphs, a three-row ladder structure topped with a central apex.  The project supports:
 
