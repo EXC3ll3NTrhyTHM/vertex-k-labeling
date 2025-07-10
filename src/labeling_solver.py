@@ -14,6 +14,29 @@ from src.graph_properties import calculate_lower_bound
 from src.constants import MAX_K_MULTIPLIER_DEFAULT, GREEDY_ATTEMPTS_DEFAULT
 from typing import Any, Tuple, Union, Dict, List, Optional
 
+try:
+    from bitarray import bitarray  # type: ignore
+    _BITARRAY_AVAILABLE = True
+except ImportError:  # pragma: no cover – fallback when dependency not installed
+    bitarray = None  # type: ignore
+    _BITARRAY_AVAILABLE = False
+
+
+def _init_used_weights(length: int):  # noqa: D401 – simple factory helper
+    """Return a zero-initialised weight-usage mask.
+
+    Uses *bitarray* when available for O(1) index ops on a compact
+    contiguous bit-set (~8× memory saving & a noticeable speed-up in inner
+    loops).  Falls back to a Python list of bools when the library is not
+    installed.
+    """
+    if _BITARRAY_AVAILABLE and bitarray is not None:
+        mask = bitarray(length)  # type: ignore[operator]
+        mask.setall(False)
+        return mask
+    # Fallback – regular Python list
+    return [False] * length
+
 def _get_vertex_sort_key(v: Union[Tuple[int, int], str]) -> Tuple[int, str, str]:
     if isinstance(v, tuple):
         # (type_discriminator, row_as_str_padded, col_as_str_padded)
@@ -158,7 +181,7 @@ def find_optimal_k_labeling(tent_size: int) -> Tuple[Optional[int], Optional[Dic
     while True:
         print(f"Attempting to find a valid labeling for k = {k}...")
         # Start backtracking with a bit-array mask for possible edge weights (0..2*k)
-        used_weights = [False] * (2 * k + 1)
+        used_weights = _init_used_weights(2 * k + 1)
         labeling = _backtrack_k_labeling(adjacency_list, k, {}, vertices, used_weights)
         if labeling is not None and is_labeling_valid(adjacency_list, labeling):
             print(f"Found a valid labeling for k = {k}")
