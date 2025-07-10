@@ -1,17 +1,9 @@
 import unittest, tempfile
 from pathlib import Path
-import shutil
-
-try:
-    from graphviz import Graph
-    _HAS_CIRCO = shutil.which("circo") is not None
-except ImportError:
-    _HAS_CIRCO = False
 
 from src.graph_generator import generate_circulant_graph
 from src.visualization import visualize_k_labeling
 
-@unittest.skipUnless(_HAS_CIRCO, "Graphviz system binary 'circo' not available")
 class TestVisualizationCirculant(unittest.TestCase):
 
     def test_visualization_circulant_file_created(self):

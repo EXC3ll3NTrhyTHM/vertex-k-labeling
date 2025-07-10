@@ -12,8 +12,8 @@ from typing import Dict, Any, Tuple, Optional
 
 try:
     from graphviz import Graph  # type: ignore
-except ImportError as e:  # pragma: no cover
-    raise ImportError("Graphviz python package is required. Install via `pip install graphviz`." ) from e
+except ImportError as e:
+    raise ImportError("Graphviz python package is required. Install via `pip install graphviz`.") from e
 
 from src.labeling_solver import is_labeling_valid  # for optional validation
 
@@ -38,27 +38,6 @@ def visualize_k_labeling(
     time_taken: float | None = None,
     solver_name: str | None = None,
 ) -> Path:
-    """Render the labeled graph to an image using Graphviz.
-
-    Args:
-        graph: adjacency list of the graph.
-        labeling: mapping of vertex -> label (k value).
-        output: path to output file (.png, .svg, etc.). Format inferred from extension.
-        validate: if True, assert that the labeling has no duplicate edge weights.
-        shaped: if True, use top-to-bottom flow and create clusters for top and bottom rows.
-        heuristic_k: the heuristic k value.
-        lower_bound_k: the lower bound k value.
-        gap: the gap between heuristic k and lower bound k.
-        time_taken: the time taken to find k.
-        solver_name: the name of the solver used (e.g., "Heuristic" or "Backtracking").
-
-    Returns:
-        Path to the generated file.
-
-    References:
-        - ai-docs/enhancments/enhancment01_add_visualization.md (visualization algorithm details)
-        - ai-docs/refactor/refactoring_task.md (notes on modularization of visualization utilities)
-    """
     if validate:
         assert is_labeling_valid(graph, labeling), "Labeling is not valid (duplicate edge weights)."
 
@@ -69,7 +48,7 @@ def visualize_k_labeling(
     # Use an undirected Graph to remove arrowheads in the rendered output.
     # Use 'dot' engine for shaped (Mongolian Tent) layouts and 'circo' for circulant radial layouts
     engine = "dot" if shaped else "neato"
-    dot = Graph(format=fmt, engine=engine)
+    dot = Graph(format=fmt, engine=engine)  # type: ignore
     if shaped:
         dot.attr(rankdir="TB")
 
@@ -92,13 +71,10 @@ def visualize_k_labeling(
     dot.attr("node", shape="circle", style="filled", color="#D5E8D4")
 
     if shaped:
-        # Create horizontal clusters for each ladder row (row index = first element in tuple vertex)
-        # Supports arbitrary number of rows; for the Mongolian Tent graph we expect 3.
-        # Sub-graphs must match the parent graph type, so we also use Graph here.
         from graphviz import Graph as _G
 
         # Group vertices by their row index.
-        row_to_vertices = {}
+        row_to_vertices: Dict[int, list] = {}
         for v in labeling:
             if isinstance(v, tuple):
                 row_to_vertices.setdefault(v[0], []).append(v)
@@ -111,19 +87,21 @@ def visualize_k_labeling(
                 cluster.node(format_vertex_id(v), label=f"{labeling[v]}")
             # Add invisible edges between consecutive vertices to enforce ordering within the rank.
             for i in range(len(vertices) - 1):
-                cluster.edge(format_vertex_id(vertices[i]), format_vertex_id(vertices[i+1]), style="invis")
+                cluster.edge(
+                    format_vertex_id(vertices[i]),
+                    format_vertex_id(vertices[i+1]),
+                    style="invis",
+                )
             dot.subgraph(cluster)
 
         # Apex vertex (top of the tent)
         if 'x' in labeling:
             apex_node = format_vertex_id('x')
             dot.node(apex_node, label=f"{labeling['x']}")
-            # Force apex to top rank explicitly.
             dot.subgraph(_G(name='apex', body=[apex_node], graph_attr={'rank': 'min'}))
     else:
-        # For circulant graphs (shaped=False), explicitly order nodes in a circle.
-        # Assumes nodes are integers 0 to n-1.
         import math
+
         node_ids = sorted([v for v in graph.keys() if isinstance(v, int)])
         n_nodes = len(node_ids)
         radius = 2.0  # arbitrary radius
@@ -135,10 +113,9 @@ def visualize_k_labeling(
             dot.node(format_vertex_id(v), label=str(v), pos=f"{x},{y}!")
 
     # Add edges with weights
-    added = set()
+    added: set[tuple] = set()
     for u, neighbors in graph.items():
         for v in neighbors:
-            # Avoid duplicate edges
             if (v, u) in added:
                 continue
             added.add((u, v))
@@ -146,17 +123,11 @@ def visualize_k_labeling(
                 weight = labeling[u] + labeling[v]
                 dot.edge(format_vertex_id(u), format_vertex_id(v), label=str(weight))
             else:
-                # fallback no label
                 dot.edge(format_vertex_id(u), format_vertex_id(v))
 
-    # Write file
     rendered_path = Path(dot.render(filename=dest_path.stem, directory=dest_path.parent, cleanup=True))
     return rendered_path
 
-
-# ---------------------------------------------------------------------------
-# Animated visualization support helper
-# ---------------------------------------------------------------------------
 
 def draw_state(
     graph: Dict[Any, list],
@@ -166,21 +137,8 @@ def draw_state(
     ax: Optional[Any] = None,
     pos: Dict[Any, Tuple[float, float]] | None = None,
     node_size: int = 300,
-):
-    """Draw the current labeling state using Matplotlib/NetworkX.
-
-    This utility is primarily intended for use by the AnimationController
-    but can be handy for debugging in notebooks.
-
-    Parameters
-    ----------
-    graph : adjacency list
-    labels : mapping of vertex -> label
-    highlight : optional vertex to highlight (e.g., just labeled vertex)
-    ax : optional matplotlib Axes to draw onto
-    pos : optional fixed layout positions
-    node_size : scatter size for nodes
-    """
+) -> Any:
+    """Draw the current labeling state using Matplotlib/NetworkX."""
     import networkx as nx
     import matplotlib.pyplot as _plt  # type: ignore
 
@@ -196,21 +154,18 @@ def draw_state(
     if pos is None:
         pos = nx.spring_layout(G, seed=42)
 
-    # Draw edges first
     nx.draw_networkx_edges(G, pos, ax=ax, edge_color="#cccccc")
 
-    # Node categories
-    labeled = list(labels.keys())
-    unlabeled = [v for v in G.nodes if v not in labeled]
+    labeled_nodes = list(labels.keys())
+    unlabeled_nodes = [v for v in G.nodes if v not in labeled_nodes]
 
-    nx.draw_networkx_nodes(G, pos, nodelist=unlabeled, node_color="#eeeeee", ax=ax, node_size=node_size)
-    nx.draw_networkx_nodes(G, pos, nodelist=labeled, node_color="#7fc97f", ax=ax, node_size=node_size)
+    nx.draw_networkx_nodes(G, pos, nodelist=unlabeled_nodes, node_color="#eeeeee", ax=ax, node_size=node_size)
+    nx.draw_networkx_nodes(G, pos, nodelist=labeled_nodes, node_color="#7fc97f", ax=ax, node_size=node_size)
 
     if highlight is not None:
         nx.draw_networkx_nodes(G, pos, nodelist=[highlight], node_color="#fc8d62", ax=ax, node_size=node_size * 1.2)
 
-    # Labels text
-    lbl_map = {v: str(labels[v]) for v in labeled}
+    lbl_map = {v: str(labels[v]) for v in labeled_nodes}
     nx.draw_networkx_labels(G, pos, labels=lbl_map, ax=ax, font_size=8)
 
     return ax

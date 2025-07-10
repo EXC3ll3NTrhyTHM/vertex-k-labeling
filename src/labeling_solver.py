@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """K-labeling solvers for Mongolian Tent graphs and related structures.
 
 Provides exact backtracking solver and several greedy/heuristic approaches
@@ -12,7 +14,24 @@ References:
 from src.graph_generator import create_mongolian_tent_graph
 from src.graph_properties import calculate_lower_bound
 from src.constants import MAX_K_MULTIPLIER_DEFAULT, GREEDY_ATTEMPTS_DEFAULT
-from typing import Any, Tuple, Union, Dict, List, Optional
+from typing import Any, Tuple, Union, Dict, List, Optional, Callable
+
+# Animation event type imports (optional – avoid hard dependency when unused)
+from importlib import import_module
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.events import StepEvent as StepEvent  # noqa: F401  (re-export for typing)
+    from src.events import EventType as EventType  # noqa: F401
+else:
+    try:
+        _events_mod = import_module("src.events")
+        StepEvent = getattr(_events_mod, "StepEvent")  # type: ignore
+        EventType = getattr(_events_mod, "EventType")  # type: ignore
+    except Exception:  # pragma: no cover – animation module unavailable
+        StepEvent = None  # type: ignore
+        EventType = None  # type: ignore
+
 
 try:
     from bitarray import bitarray  # type: ignore
@@ -102,7 +121,32 @@ def is_labeling_valid(adjacency_list: Dict[Any, List[Any]], vertex_labels: Dict[
                 weights.add(weight)
     return True
 
-def _backtrack_k_labeling(adjacency_list: Dict[Any, List[Any]], max_k_value: int, vertex_labels: Dict[Any, int], unlabeled_vertices: List[Any], used_weights: List[bool]) -> Optional[Dict[Any, int]]:
+# --------------------
+# Solver base emit helper
+# --------------------
+
+def _maybe_emit(callback: Optional[Callable[["StepEvent"], None]], event: Optional["StepEvent"]):
+    """Safely invoke *callback* with *event* if both are provided.
+
+    The indirection avoids import errors when the animation module is not
+    installed or when event types are mocked.
+    """
+
+    if callback is not None and event is not None:
+        try:
+            callback(event)  # type: ignore[arg-type]
+        except Exception:  # pragma: no cover – animation errors should not break solver
+            # Fail-safe: ignore animation issues
+            pass
+
+def _backtrack_k_labeling(
+    adjacency_list: Dict[Any, List[Any]],
+    max_k_value: int,
+    vertex_labels: Dict[Any, int],
+    unlabeled_vertices: List[Any],
+    used_weights: List[bool],
+    on_step: Optional[Callable[["StepEvent"], None]] = None,
+) -> Optional[Dict[Any, int]]:
     """
     Recursively find a valid k-labeling using backtracking.
 
@@ -129,12 +173,25 @@ def _backtrack_k_labeling(adjacency_list: Dict[Any, List[Any]], max_k_value: int
     remaining_vertices = unlabeled_vertices[1:]
 
     for label in range(1, max_k_value + 1):
+        if StepEvent and EventType:
+            _maybe_emit(
+                on_step,
+                StepEvent(EventType.VERTEX_LABELED, {"vertex": vertex_to_label, "label": label}),
+            )
         vertex_labels[vertex_to_label] = label
         new_weights: List[int] = []
         conflict = False
         for neighbor in adjacency_list[vertex_to_label]:
             if neighbor in vertex_labels:
                 weight = label + vertex_labels[neighbor]
+                if StepEvent and EventType:
+                    _maybe_emit(
+                        on_step,
+                        StepEvent(
+                            EventType.EDGE_WEIGHT_CALCULATED,
+                            {"edge": (vertex_to_label, neighbor), "weight": weight},
+                        ),
+                    )
                 # Check against bit-array mask
                 if weight < len(used_weights) and used_weights[weight]:
                     conflict = True
@@ -146,17 +203,33 @@ def _backtrack_k_labeling(adjacency_list: Dict[Any, List[Any]], max_k_value: int
                 used_weights[w] = True
 
             # Recurse with updated weights
-            result = _backtrack_k_labeling(adjacency_list, max_k_value, vertex_labels, remaining_vertices, used_weights)
+            result = _backtrack_k_labeling(
+                adjacency_list,
+                max_k_value,
+                vertex_labels,
+                remaining_vertices,
+                used_weights,
+                on_step,
+            )
             if result is not None:
                 return result  # Found a solution
             # Backtrack bit-array flags
             for w in new_weights:
                 used_weights[w] = False
     # Backtrack if no valid label was found
+    if StepEvent and EventType and vertex_to_label in vertex_labels:
+        _maybe_emit(
+            on_step,
+            StepEvent(EventType.BACKTRACK, {"vertex": vertex_to_label}),
+        )
     del vertex_labels[vertex_to_label]
     return None
 
-def find_optimal_k_labeling(tent_size: int) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
+def find_optimal_k_labeling(
+    tent_size: int,
+    *,
+    on_step: Optional[Callable[["StepEvent"], None]] = None,
+) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
     """
     Find the optimal (minimum) k and a valid labeling for the Mongolian Tent graph MT_3,n.
 
@@ -182,13 +255,19 @@ def find_optimal_k_labeling(tent_size: int) -> Tuple[Optional[int], Optional[Dic
         print(f"Attempting to find a valid labeling for k = {k}...")
         # Start backtracking with a bit-array mask for possible edge weights (0..2*k)
         used_weights = _init_used_weights(2 * k + 1)
-        labeling = _backtrack_k_labeling(adjacency_list, k, {}, vertices, used_weights)
+        labeling = _backtrack_k_labeling(adjacency_list, k, {}, vertices, used_weights, on_step)
         if labeling is not None and is_labeling_valid(adjacency_list, labeling):
             print(f"Found a valid labeling for k = {k}")
             return k, labeling
         k += 1
 
-def greedy_k_labeling(adjacency_list: Dict[Any, List[Any]], k_upper_bound: int, attempts: int = GREEDY_ATTEMPTS_DEFAULT) -> Optional[Dict[Any, int]]:
+def greedy_k_labeling(
+    adjacency_list: Dict[Any, List[Any]],
+    k_upper_bound: int,
+    attempts: int = GREEDY_ATTEMPTS_DEFAULT,
+    *,
+    on_step: Optional[Callable[["StepEvent"], None]] = None,
+) -> Optional[Dict[Any, int]]:
     """A more robust greedy solver that makes multiple randomized attempts.
 
     References:
@@ -213,12 +292,25 @@ def greedy_k_labeling(adjacency_list: Dict[Any, List[Any]], k_upper_bound: int, 
                 for neighbor in adjacency_list[vertex]:
                     if neighbor in vertex_labels:
                         weight = label + vertex_labels[neighbor]
+                        if StepEvent and EventType:
+                            _maybe_emit(
+                                on_step,
+                                StepEvent(
+                                    EventType.EDGE_WEIGHT_CALCULATED,
+                                    {"edge": (vertex, neighbor), "weight": weight},
+                                ),
+                            )
                         if used_weights[weight]:
                             conflict = True
                             break
                         temp_weights.append(weight)
                 if not conflict:
                     vertex_labels[vertex] = label
+                    if StepEvent and EventType:
+                        _maybe_emit(
+                            on_step,
+                            StepEvent(EventType.VERTEX_LABELED, {"vertex": vertex, "label": label}),
+                        )
                     for w in temp_weights:
                         used_weights[w] = True
                     assigned = True
@@ -229,6 +321,8 @@ def greedy_k_labeling(adjacency_list: Dict[Any, List[Any]], k_upper_bound: int, 
         if success:
             # Verify the final labeling is truly valid (no duplicate edge weights)
             if is_labeling_valid(adjacency_list, vertex_labels):
+                if StepEvent and EventType:
+                    _maybe_emit(on_step, StepEvent(EventType.SOLUTION_FOUND, {"labels": vertex_labels}))
                 return vertex_labels
             # Otherwise, discard and continue attempts
     return None
@@ -241,6 +335,8 @@ def greedy_k_labeling(adjacency_list: Dict[Any, List[Any]], k_upper_bound: int, 
 def _first_fit_greedy_k_labeling(
     adjacency_list: Dict[Any, List[Any]],
     k_upper_bound: int,
+    *,
+    on_step: Optional[Callable[["StepEvent"], None]] = None,
 ) -> Optional[Dict[Any, int]]:
     """A single-pass deterministic greedy solver.
 
@@ -268,12 +364,25 @@ def _first_fit_greedy_k_labeling(
             for neighbor in adjacency_list[vertex]:
                 if neighbor in vertex_labels:
                     weight = label + vertex_labels[neighbor]
+                    if StepEvent and EventType:
+                        _maybe_emit(
+                            on_step,
+                            StepEvent(
+                                EventType.EDGE_WEIGHT_CALCULATED,
+                                {"edge": (vertex, neighbor), "weight": weight},
+                            ),
+                        )
                     if used_weights[weight]:
                         conflict = True
                         break
                     temp_weights.append(weight)
             if not conflict:
                 vertex_labels[vertex] = label
+                if StepEvent and EventType:
+                    _maybe_emit(
+                        on_step,
+                        StepEvent(EventType.VERTEX_LABELED, {"vertex": vertex, "label": label}),
+                    )
                 for w in temp_weights:
                     used_weights[w] = True
                 assigned = True
@@ -288,6 +397,7 @@ def find_feasible_k_labeling(
     num_attempts: int = GREEDY_ATTEMPTS_DEFAULT,
     *,
     algorithm: str = "accurate",
+    on_step: Optional[Callable[["StepEvent"], None]] = None,
 ) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
     """
     Find a feasible k-labeling for the Mongolian Tent graph using a heuristic search.
@@ -324,7 +434,7 @@ def find_feasible_k_labeling(
                 print(f"Attempting fast greedy solve for k={k} (multi-pass)...")
 
             # 1) Deterministic first-fit pass (very quick)
-            labeling = _first_fit_greedy_k_labeling(adjacency_list, k)
+            labeling = _first_fit_greedy_k_labeling(adjacency_list, k, on_step=on_step)
             if labeling and is_labeling_valid(adjacency_list, labeling):
                 print(f"Fast heuristic found a valid labeling with k={k} for n={tent_size} on deterministic pass.")
                 return k, labeling
@@ -332,7 +442,7 @@ def find_feasible_k_labeling(
             # 2) Limited randomized passes correlated to n to improve accuracy without large slowdown.
             passes = max(2, min(10, tent_size // 2))  # e.g., n=5 ⇒ 2 passes, n=20 ⇒ 10 passes cap.
             for _ in range(passes):
-                labeling = greedy_k_labeling(adjacency_list, k, attempts=1)
+                labeling = greedy_k_labeling(adjacency_list, k, attempts=1, on_step=on_step)
                 if labeling and is_labeling_valid(adjacency_list, labeling):
                     print(
                         f"Fast heuristic found a valid labeling with k={k} for n={tent_size} after randomized pass."
@@ -341,7 +451,7 @@ def find_feasible_k_labeling(
         else:  # accurate / default multi-attempt heuristic
             if k == lower_bound or k % 10 == 0:
                 print(f"Attempting randomized greedy solve for k={k} ({num_attempts} attempts)...")
-            labeling = greedy_k_labeling(adjacency_list, k, attempts=num_attempts)
+            labeling = greedy_k_labeling(adjacency_list, k, attempts=num_attempts, on_step=on_step)
             if labeling and is_labeling_valid(adjacency_list, labeling):
                 print(f"Heuristic search found a valid labeling with k={k} for n={tent_size}.")
                 return k, labeling

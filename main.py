@@ -16,6 +16,13 @@ def main():
     parser.add_argument("--graph-type", type=str, default="shape", choices=["shape", "circulant"], help="Graph type: 'shape' (Mongolian Tent) or 'circulant' (r = max(n - DEFAULT_CIRCULANT_OFFSET, 2))")
     parser.add_argument("--solver", type=str, default=DEFAULT_SOLVER_TYPE, choices=["heuristic", "backtracking"], help=f"Solver to use: 'heuristic' (accurate or fast) or 'backtracking' (default: {DEFAULT_SOLVER_TYPE})")
     parser.add_argument("--heuristic_mode", type=str, default="accurate", choices=["accurate", "fast"], help="Heuristic mode: 'accurate' uses randomized multi-attempt search (slower, better chance of optimal k), 'fast' uses a single-pass greedy (faster, possibly higher k). Ignored for backtracking solver.")
+    parser.add_argument(
+        "--animate",
+        type=str,
+        default="off",
+        choices=["off", "live", "record"],
+        help="Enable animated visualization (live window or record to GIF/MP4).",
+    )
     args = parser.parse_args()
 
     n = args.n
@@ -49,14 +56,28 @@ def main():
             print("Graphviz not installed; skipping visualization.")
         return
     # Proceed with solver for shape graphs
+    # Animation controller if requested
+    anim_ctrl = None
+    if args.animate != "off":
+        try:
+            from src.visualization.animation import AnimationController
+
+            anim_ctrl = AnimationController(graph, mode=args.animate)
+            on_step_cb = anim_ctrl.update
+        except ImportError:
+            print("Animation dependencies missing; continuing without animation.")
+            on_step_cb = None
+    else:
+        on_step_cb = None
+
     start_time = time.time()
     if solver_type == "heuristic":
-        k, labeling = find_feasible_k_labeling(n, algorithm=heuristic_mode)
+        k, labeling = find_feasible_k_labeling(n, algorithm=heuristic_mode, on_step=on_step_cb)
         lower_bound = calculate_lower_bound(n)
         gap = (k - lower_bound) if isinstance(k, int) else "N/A"
         solver_name = "Heuristic"
     elif solver_type == "backtracking":
-        k, labeling = find_optimal_k_labeling(n)
+        k, labeling = find_optimal_k_labeling(n, on_step=on_step_cb)
         lower_bound = k  # Optimal solver finds minimal k
         gap = 0
         solver_name = "Backtracking"
@@ -98,6 +119,15 @@ def main():
             print(f"Visualization saved to {file_name}")
         except ImportError:
             print("Graphviz not installed; skipping visualization.")
+
+        # Save animation if recorded
+        if anim_ctrl and args.animate == "record":
+            outfile = f"graphs/solver_run_n{n}_{solver_type}.gif"
+            try:
+                path = anim_ctrl.save(outfile)
+                print(f"Animation saved to {path}")
+            except Exception as err:
+                print(f"Failed to save animation: {err}")
     else:
         print(f"Could not find a valid labeling for n = {n}")
 
