@@ -229,6 +229,7 @@ def find_optimal_k_labeling(
     tent_size: int,
     *,
     on_step: Optional[Callable[["StepEvent"], None]] = None,
+    on_event: Optional[Callable[["StepEvent"], None]] = None,
 ) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
     """
     Find the optimal (minimum) k and a valid labeling for the Mongolian Tent graph MT_3,n.
@@ -255,7 +256,8 @@ def find_optimal_k_labeling(
         print(f"Attempting to find a valid labeling for k = {k}...")
         # Start backtracking with a bit-array mask for possible edge weights (0..2*k)
         used_weights = _init_used_weights(2 * k + 1)
-        labeling = _backtrack_k_labeling(adjacency_list, k, {}, vertices, used_weights, on_step)
+        callback = on_event if on_event is not None else on_step
+        labeling = _backtrack_k_labeling(adjacency_list, k, {}, vertices, used_weights, callback)
         if labeling is not None and is_labeling_valid(adjacency_list, labeling):
             print(f"Found a valid labeling for k = {k}")
             return k, labeling
@@ -267,6 +269,7 @@ def greedy_k_labeling(
     attempts: int = GREEDY_ATTEMPTS_DEFAULT,
     *,
     on_step: Optional[Callable[["StepEvent"], None]] = None,
+    on_event: Optional[Callable[["StepEvent"], None]] = None,
 ) -> Optional[Dict[Any, int]]:
     """A more robust greedy solver that makes multiple randomized attempts.
 
@@ -294,7 +297,7 @@ def greedy_k_labeling(
                         weight = label + vertex_labels[neighbor]
                         if StepEvent and EventType:
                             _maybe_emit(
-                                on_step,
+                                on_event,
                                 StepEvent(
                                     EventType.EDGE_WEIGHT_CALCULATED,
                                     {"edge": (vertex, neighbor), "weight": weight},
@@ -308,7 +311,7 @@ def greedy_k_labeling(
                     vertex_labels[vertex] = label
                     if StepEvent and EventType:
                         _maybe_emit(
-                            on_step,
+                            on_event,
                             StepEvent(EventType.VERTEX_LABELED, {"vertex": vertex, "label": label}),
                         )
                     for w in temp_weights:
@@ -322,7 +325,7 @@ def greedy_k_labeling(
             # Verify the final labeling is truly valid (no duplicate edge weights)
             if is_labeling_valid(adjacency_list, vertex_labels):
                 if StepEvent and EventType:
-                    _maybe_emit(on_step, StepEvent(EventType.SOLUTION_FOUND, {"labels": vertex_labels}))
+                    _maybe_emit(on_event, StepEvent(EventType.SOLUTION_FOUND, {"labels": vertex_labels}))
                 return vertex_labels
             # Otherwise, discard and continue attempts
     return None
@@ -398,6 +401,7 @@ def find_feasible_k_labeling(
     *,
     algorithm: str = "accurate",
     on_step: Optional[Callable[["StepEvent"], None]] = None,
+    on_event: Optional[Callable[["StepEvent"], None]] = None,
 ) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
     """
     Find a feasible k-labeling for the Mongolian Tent graph using a heuristic search.
@@ -434,7 +438,8 @@ def find_feasible_k_labeling(
                 print(f"Attempting fast greedy solve for k={k} (multi-pass)...")
 
             # 1) Deterministic first-fit pass (very quick)
-            labeling = _first_fit_greedy_k_labeling(adjacency_list, k, on_step=on_step)
+            callback = on_event if on_event is not None else on_step
+            labeling = _first_fit_greedy_k_labeling(adjacency_list, k, on_step=callback)
             if labeling and is_labeling_valid(adjacency_list, labeling):
                 print(f"Fast heuristic found a valid labeling with k={k} for n={tent_size} on deterministic pass.")
                 return k, labeling
@@ -442,7 +447,13 @@ def find_feasible_k_labeling(
             # 2) Limited randomized passes correlated to n to improve accuracy without large slowdown.
             passes = max(2, min(10, tent_size // 2))  # e.g., n=5 ⇒ 2 passes, n=20 ⇒ 10 passes cap.
             for _ in range(passes):
-                labeling = greedy_k_labeling(adjacency_list, k, attempts=1, on_step=on_step)
+                callback = on_event if on_event is not None else on_step
+                labeling = greedy_k_labeling(
+                    adjacency_list,
+                    k,
+                    attempts=1,
+                    on_event=callback,
+                )
                 if labeling and is_labeling_valid(adjacency_list, labeling):
                     print(
                         f"Fast heuristic found a valid labeling with k={k} for n={tent_size} after randomized pass."
@@ -451,7 +462,13 @@ def find_feasible_k_labeling(
         else:  # accurate / default multi-attempt heuristic
             if k == lower_bound or k % 10 == 0:
                 print(f"Attempting randomized greedy solve for k={k} ({num_attempts} attempts)...")
-            labeling = greedy_k_labeling(adjacency_list, k, attempts=num_attempts, on_step=on_step)
+            callback = on_event if on_event is not None else on_step
+            labeling = greedy_k_labeling(
+                adjacency_list,
+                k,
+                attempts=num_attempts,
+                on_event=callback,
+            )
             if labeling and is_labeling_valid(adjacency_list, labeling):
                 print(f"Heuristic search found a valid labeling with k={k} for n={tent_size}.")
                 return k, labeling

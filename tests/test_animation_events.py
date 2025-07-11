@@ -1,5 +1,6 @@
 from src.labeling_solver import find_feasible_k_labeling
 from src.events import EventType, StepEvent
+from src.visualization.recorder import EventRecorder
 
 
 def test_event_emission_count_small_graph():
@@ -11,13 +12,14 @@ def test_event_emission_count_small_graph():
     used below to derive the expected vertex count in a backend-agnostic way
     (we do not depend on knowledge of Mongolian Tent graph order).
     """
+    # Use EventRecorder to collect events for a tiny graph (n=3)
     events: list[StepEvent] = []
-
-    def _collector(ev: StepEvent):
-        events.append(ev)
-
-    # Use a tiny graph (n=3) and the fast heuristic for speed inside CI.
-    k, labeling = find_feasible_k_labeling(3, algorithm="fast", on_step=_collector)
+    recorder = EventRecorder(events)
+    k, labeling = find_feasible_k_labeling(
+        3,
+        algorithm="fast",
+        on_event=recorder,
+    )
 
     # Basic sanity guard – solver should succeed.
     assert k is not None and labeling, "solver failed on n=3 with animation enabled"

@@ -36,10 +36,15 @@ $ pip install -r requirements.txt
 
 # 5. Run the demo script
 #    Heuristic solver (accurate mode is default):
+#    Standard run (accurate heuristic mode, no animation):
 #    n_value is optional and defaults to 5
-$ python main.py [--n <n_value>]  # accurate mode
+$ python main.py [--n <n_value>]
 #    Fast heuristic mode:
 $ python main.py --n <n_value> --heuristic_mode fast
+#    Live animation display:
+$ python main.py --n <n_value> --animate live
+#    Record animation to GIF/MP4:
+$ python main.py --n <n_value> --animate record
 #    For backtracking solver:
 $ python main.py --n <n_value> --solver backtracking
 #    Circulant graph generation:
@@ -108,6 +113,7 @@ visualize_labeling(G, labeling, output="mt3_8.png")
 | Script | Path | Purpose |
 |--------|------|---------|
 | Demo / solver runner | `main.py` | Find a feasible labeling, print results, optionally visualise. Supports `--n`, `--solver`, `--heuristic_mode`. |
+|  |  | Supports `--n`, `--solver`, `--heuristic_mode`, and `--animate {off,live,record}` for live or recorded animations. |
 | Stand-alone visualiser | `src/visualization.py` | Render a pre-computed labeling to PNG/SVG. Expects `n` and output filename; internally calls the backtracking solver by default. Useful for re-rendering or experimenting with Graphviz styles. |
 
 Examples:

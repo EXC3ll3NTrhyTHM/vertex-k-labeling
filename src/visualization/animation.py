@@ -5,6 +5,7 @@ from typing import Dict, Any, List, Tuple, Optional
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from .base_renderer import BaseRenderer
 
 try:
     import imageio.v2 as imageio  # modern imageio api
@@ -16,7 +17,7 @@ from src.events import StepEvent, EventType
 __all__ = ["AnimationController"]
 
 
-class AnimationController:
+class AnimationController(BaseRenderer):
     """Consume solver *StepEvent*s and produce a live or recorded animation.
 
     Parameters
@@ -41,26 +42,10 @@ class AnimationController:
         fps: int = 30,
         figsize: Tuple[int, int] = (6, 6),
     ) -> None:
-        if mode not in {"off", "live", "record"}:
-            raise ValueError("mode must be 'off', 'live', or 'record'")
-        self.graph = graph
-        self.mode = mode
-        self.fps = fps
-        self.figsize = figsize
-
-        # Internal state: labels per vertex
-        self.labels: Dict[Any, int] = {}
-        # Track the most recently changed vertex for highlighting
-        self.highlighted_vertex: Any | None = None
-        self.frames: List[Any] = []  # stores rendered frames for record mode
-
-        # Setup Matplotlib figure only if needed
-        self._fig = None
-        self._ax = None
-        if self.mode == "live":
-            self._setup_plot()
-        elif self.mode == "record":
-            # Initialize plot and capture initial frame for recording
+        # Initialize base renderer (caches layout, sets up figure/axes)
+        super().__init__(graph, mode=mode, fps=fps, figsize=figsize)
+        # If recording, capture initial frame
+        if self.mode == "record":
             self._render_frame()
 
     # ---------------------
@@ -108,20 +93,11 @@ class AnimationController:
     # ---------------------
 
     def _setup_plot(self) -> None:
-        import networkx as nx  # networkx is lightweight; used for layout
-
-        self._fig, self._ax = plt.subplots(figsize=self.figsize)
-        self._ax.set_axis_off()
-
-        G = nx.Graph()
-        for u, neighbors in self.graph.items():
-            for v in neighbors:
-                G.add_edge(u, v)
-        # Use spring layout for generic graphs; shaped graphs may override
-        self._pos = nx.spring_layout(G, seed=42)
-
+        # Use precomputed layout and axes from BaseRenderer
         # Draw static edges once
-        nx.draw_networkx_edges(G, self._pos, ax=self._ax, edge_color="#cccccc")
+        import networkx as nx  # type: ignore
+
+        nx.draw_networkx_edges(nx.Graph(self.graph), self._pos, ax=self._ax, edge_color="#cccccc")
         self._nodes = None  # will be scatter collection
         self._labels_text = {}
 

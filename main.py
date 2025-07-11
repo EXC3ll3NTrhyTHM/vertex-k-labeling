@@ -4,6 +4,7 @@ from src.labeling_solver import find_feasible_k_labeling, find_optimal_k_labelin
 import json
 import time
 import argparse
+from src.edge_irregular_solver import k_labeling_backtracking
 from src.constants import DEFAULT_TENT_SIZE, DEFAULT_SOLVER_TYPE, DEFAULT_CIRCULANT_OFFSET
 from src.graph_generator import generate_circulant_graph
 
@@ -14,7 +15,9 @@ def main():
     parser = argparse.ArgumentParser(description="Find and visualize k-labeling for Mongolian Tent graphs.")
     parser.add_argument("--n", type=int, default=DEFAULT_TENT_SIZE, help=f"Value of n (default: {DEFAULT_TENT_SIZE})")
     parser.add_argument("--graph-type", type=str, default="shape", choices=["shape", "circulant"], help="Graph type: 'shape' (Mongolian Tent) or 'circulant' (r = max(n - DEFAULT_CIRCULANT_OFFSET, 2))")
-    parser.add_argument("--solver", type=str, default=DEFAULT_SOLVER_TYPE, choices=["heuristic", "backtracking"], help=f"Solver to use: 'heuristic' (accurate or fast) or 'backtracking' (default: {DEFAULT_SOLVER_TYPE})")
+    parser.add_argument("--solver", type=str, default=DEFAULT_SOLVER_TYPE, choices=["heuristic", "backtracking", "edge-irregular"], help=f"Solver to use: 'heuristic', 'backtracking', or 'edge-irregular' (default: {DEFAULT_SOLVER_TYPE})")
+    parser.add_argument("--k-limit", type=int, default=None, help="Upper bound on k for edge-irregular solver")
+    parser.add_argument("--progress", action="store_true", help="Print progress of k-limit search for edge-irregular solver")
     parser.add_argument("--heuristic_mode", type=str, default="accurate", choices=["accurate", "fast"], help="Heuristic mode: 'accurate' uses randomized multi-attempt search (slower, better chance of optimal k), 'fast' uses a single-pass greedy (faster, possibly higher k). Ignored for backtracking solver.")
     parser.add_argument(
         "--animate",
@@ -56,31 +59,56 @@ def main():
             print("Graphviz not installed; skipping visualization.")
         return
     # Proceed with solver for shape graphs
-    # Animation controller if requested
+    # Setup callbacks based on animation mode
     anim_ctrl = None
-    if args.animate != "off":
-        try:
-            from src.visualization.animation import AnimationController
+    events = None
+    on_step_cb = None
+    on_event_cb = None
+    if args.animate == "live":
+        from src.visualization.animation import AnimationController
 
-            anim_ctrl = AnimationController(graph, mode=args.animate)
-            on_step_cb = anim_ctrl.update
-        except ImportError:
-            print("Animation dependencies missing; continuing without animation.")
-            on_step_cb = None
+        anim_ctrl = AnimationController(graph, mode="live")
+        on_step_cb = anim_ctrl.update
+    elif args.animate == "record":
+        from src.visualization.recorder import EventRecorder
+
+        events = []
+        recorder = EventRecorder(events)
+        on_event_cb = recorder
     else:
         on_step_cb = None
+        on_event_cb = None
 
     start_time = time.time()
     if solver_type == "heuristic":
-        k, labeling = find_feasible_k_labeling(n, algorithm=heuristic_mode, on_step=on_step_cb)
+        k, labeling = find_feasible_k_labeling(
+            n,
+            algorithm=heuristic_mode,
+            on_step=on_step_cb,
+            on_event=on_event_cb,
+        )
         lower_bound = calculate_lower_bound(n)
         gap = (k - lower_bound) if isinstance(k, int) else "N/A"
         solver_name = "Heuristic"
     elif solver_type == "backtracking":
-        k, labeling = find_optimal_k_labeling(n, on_step=on_step_cb)
+        k, labeling = find_optimal_k_labeling(
+            n,
+            on_step=on_step_cb,
+            on_event=on_event_cb,
+        )
         lower_bound = k  # Optimal solver finds minimal k
         gap = 0
         solver_name = "Backtracking"
+    elif solver_type == "edge-irregular":
+        # Edge-Irregular backtracking solver
+        labeling = k_labeling_backtracking(graph, k_limit=args.k_limit)
+        if labeling:
+            k = max(labeling.values())
+        else:
+            k = None
+        lower_bound = max((len(neighbors) for neighbors in graph.values()), default=0)
+        gap = k - lower_bound if isinstance(k, int) else "N/A"
+        solver_name = "Edge-Irregular Backtracking"
     else:
         print("Invalid solver type. Please choose 'heuristic' or 'backtracking'.")
         return
@@ -120,14 +148,18 @@ def main():
         except ImportError:
             print("Graphviz not installed; skipping visualization.")
 
-        # Save animation if recorded
-        if anim_ctrl and args.animate == "record":
+        # Save animation if recorded (post-solve replay)
+        if args.animate == "record":
+            from src.visualization.replay import ReplayController
+
+            # Use empty list if events is unexpectedly None
+            replayer = ReplayController(graph, events or [])
             outfile = f"graphs/solver_run_n{n}_{solver_type}.gif"
             try:
-                path = anim_ctrl.save(outfile)
-                print(f"Animation saved to {path}")
+                path = replayer.save(outfile)
+                print(f"Recording saved to {path}")
             except Exception as err:
-                print(f"Failed to save animation: {err}")
+                print(f"Failed to save recording: {err}")
     else:
         print(f"Could not find a valid labeling for n = {n}")
 
