@@ -1,0 +1,53 @@
+<context>
+# Task: Complete Intelligent Heuristic Accuracy Enhancement
+
+## Overview
+This task focuses on the implementation of the accuracy enhancements for the "intelligent" heuristic algorithm as detailed in `ai-docs/enhancements/enhancement_intelligent_heuristic_accuracy.md`. The goal is to refine the core strategies of vertex ordering, label selection, and local search within `src/labeling_solver.py` to achieve superior accuracy (lower `k` values) and improved performance for k-labeling.
+
+## Core Implementation Areas
+1.  **Refined Vertex Ordering (Advanced Degree-Biased Randomization):** Implement a dynamic scoring mechanism for unlabeled vertices that considers degree, connectivity to labeled neighbors, and potential conflicts.
+2.  **Adaptive Conflict-Directed Label Selection (Dynamic Conflict Thresholds):** Enhance the label selection logic to dynamically adjust acceptable conflict thresholds based on the labeling process state.
+3.  **Multi-Strategy Local Search Repair Mechanism:** Refactor the local search to support multiple repair heuristics and a switching mechanism to escape local minima.
+
+## Expected Outcome
+- The `intelligent` mode in `src/labeling_solver.py` will consistently find lower `k` values and/or complete the labeling process faster for a wider range of graph sizes and complexities.
+- All new logic will be thoroughly tested with updated and new test cases in `tests/test_heuristic_solver.py`.
+</context>
+<PRD>
+# Technical Implementation Details
+- **Primary File:** `src/labeling_solver.py`
+- **Testing File:** `tests/test_heuristic_solver.py`
+
+# Development Roadmap
+
+## Phase 1: Advanced Vertex Ordering & Adaptive Label Selection
+- **Task 1.1: Refine Dynamic Scoring for Vertex Selection**
+    - Modify the vertex selection logic in `src/labeling_solver.py` to incorporate a dynamic scoring mechanism. This score should consider:
+        - Vertex degree.
+        - Number of already-labeled neighbors.
+        - Potential conflicts based on current partial labeling.
+    - Prioritize vertices with higher scores.
+- **Task 1.2: Implement Adaptive Conflict Thresholds for Label Selection**
+    - Update the label selection function in `src/labeling_solver.py` to include adaptive conflict thresholds.
+    - Allow for dynamic adjustment of acceptable conflict levels based on the stage of the labeling process (e.g., stricter early on, more lenient later).
+- **Task 1.3: Integrate Refined Strategies into Greedy Pass**
+    - Integrate the updated vertex ordering and adaptive label selection into the main greedy pass for the `intelligent` mode in `src/labeling_solver.py`.
+
+## Phase 2: Multi-Strategy Local Search & Comprehensive Testing
+- **Task 2.1: Develop Multi-Strategy Local Search Repair Mechanism**
+    - Refactor the local search repair mechanism in `src/labeling_solver.py` to support multiple repair strategies (e.g., iterative minimum conflict re-labeling, tabu search, simulated annealing-like perturbations).
+    - Implement a switching mechanism to trigger alternative strategies if the primary one gets stuck.
+- **Task 2.2: Update and Add Comprehensive Tests**
+    - Update existing unit and integration tests in `tests/test_heuristic_solver.py` to cover the enhanced `intelligent` mode.
+    - Add new test cases to specifically validate the accuracy and performance improvements, including edge cases and benchmarks against previous versions and other heuristics.
+
+# Logical Dependency Chain
+1.  Phase 1 tasks (vertex ordering and adaptive label selection) are foundational and must be completed before Phase 2, as they directly impact the initial greedy labeling.
+2.  The multi-strategy local search (Task 2.1) depends on the outcome of the greedy pass from Phase 1.
+3.  Comprehensive testing (Task 2.2) should be an ongoing process but can only be finalized once all implementation from both phases is complete and integrated.
+
+# Risks and Mitigations (from PRD)
+- **Risk 1: Over-optimization leading to diminishing returns:** Implement changes incrementally and rigorously benchmark each iteration. Define clear performance and accuracy targets.
+- **Risk 2: Increased computational time for advanced heuristics:** Profile all new components extensively. Prioritize strategies that offer the best accuracy-to-performance ratio. Explore approximations or pre-computation.
+- **Risk 3: Difficulty in tuning multiple heuristic parameters:** Design parameters to be robust and self-adjusting where possible. Provide clear documentation and default values. Consider automated parameter tuning.
+</PRD>

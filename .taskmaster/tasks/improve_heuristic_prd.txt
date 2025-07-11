@@ -1,0 +1,63 @@
+<context>
+# Overview
+The project's current "accurate" heuristic algorithm for k-labeling relies on a purely random search strategy. While simple, this approach often results in sub-optimal `k` values and scales poorly for larger graphs (`n`) due to wasted, redundant computations. This enhancement aims to refactor the accurate heuristic by incorporating more intelligent, guided search strategies. The goal is to improve the accuracy (finding lower `k` values), increase computational efficiency, and ensure more consistent, predictable performance, especially for complex graphs.
+
+# Core Features
+1.  **Smarter Vertex Ordering (Degree-Biased Randomization)**
+    - **What:** Prioritize processing vertices that are more constrained (i.e., have a higher degree) first.
+    - **Why:** Tackling the most difficult parts of the graph first reduces the chance of running into dead ends late in the search process.
+    - **How:** Vertices will be grouped into quantiles by degree. The search will process vertices by randomly selecting from the highest-degree quantile first, then the next, and so on. This maintains the high-level strategy of "hardest first" while still allowing for search diversity.
+
+2.  **Conflict-Directed Label Selection (Minimum Conflict Heuristic)**
+    - **What:** When choosing a label for a vertex, select the one that is least likely to cause future conflicts.
+    - **Why:** This actively steers the search towards valid solutions, increasing the probability of finding a valid labeling in a single pass.
+    - **How:** For a given vertex, each possible label (`1...k`) will be scored based on the number of new edge weight conflicts it would create with already-labeled neighbors. The label with the minimum conflict score will be chosen.
+
+3.  **Local Search Repair Mechanism**
+    - **What:** Instead of discarding a nearly-valid solution, attempt to repair it.
+    - **Why:** It is often more efficient to fix a few remaining conflicts in a partial solution than to start the entire search process from scratch.
+    - **How:** If the initial greedy pass completes with some conflicting edges, a local search phase will be initiated. This phase will iteratively try to re-label only the vertices involved in conflicts using the Minimum Conflict Heuristic until the solution is valid or a fixed number of repair attempts is reached.
+
+# User Experience
+- **CLI Interaction:** A new algorithm option, `intelligent`, will be added to the command-line interface. Users will be able to select it via a flag (e.g., `--algorithm intelligent`).
+- **Expected Outcome:** For a given graph, the user will observe that the `intelligent` mode finds a valid k-labeling with a lower `k` value and/or in less time compared to the existing `accurate` mode, particularly for larger `n`. The output format and visualization will remain unchanged.
+</context>
+<PRD>
+# Technical Architecture
+- **File to Modify:** `src/labeling_solver.py` will be the primary location for the changes.
+- **New Logic:**
+    - A new function will be implemented for the degree-biased random ordering of vertices.
+    - A new function will be implemented to calculate the conflict score for a given label and select the minimum-conflict label.
+    - The main `find_feasible_k_labeling` function will be updated to include the `intelligent` mode, which will orchestrate the new vertex ordering, label selection, and the local search repair phase.
+- **Testing:** New test cases will be added to `tests/test_heuristic_solver.py` to specifically validate the `intelligent` mode. These tests will assert its correctness and compare its performance against the `accurate` mode on benchmark graphs.
+
+# Development Roadmap
+1.  **Phase 1: Foundation & Core Logic**
+    - Implement the new `intelligent` algorithm option in `src/labeling_solver.py`.
+    - Implement the Degree-Biased Random Ordering for vertex selection.
+    - Implement the Minimum Conflict Heuristic for label selection.
+    - Integrate the new ordering and selection logic into a single greedy pass for the `intelligent` mode.
+
+2.  **Phase 2: Repair and Validation**
+    - Implement the Local Search Repair mechanism that triggers if the greedy pass from Phase 1 fails to produce a perfect solution.
+    - Develop and add comprehensive unit and integration tests to `tests/test_heuristic_solver.py` to cover the new logic, including edge cases and performance benchmarks.
+
+# Logical Dependency Chain
+1.  The CLI flag for the `intelligent` algorithm must be added first to structure the new code path.
+2.  The vertex ordering logic is foundational and must be implemented before the main greedy pass can be built.
+3.  The label selection logic is called for each vertex, so it depends on the ordering being in place.
+4.  The main greedy pass integrates the ordering and selection logic.
+5.  The local search repair mechanism is an add-on to the greedy pass and should be implemented after the core pass is functional.
+6.  Testing should be developed in parallel with the features but can only be finalized once all implementation is complete.
+
+# Risks and Mitigations
+- **Risk 1: Increased Complexity:** The new logic is more complex than the current random-shuffling approach, potentially introducing subtle bugs.
+  - **Mitigation:** Develop thorough unit tests for each new component (ordering, scoring, repair) before integrating them.
+- **Risk 2: Performance Overhead:** The conflict scoring calculation could add significant overhead to each label assignment, potentially slowing down the algorithm.
+  - **Mitigation:** Profile the performance of the conflict scoring function. If it's a bottleneck, explore optimization strategies for the calculation. The overall performance will be benchmarked against the existing `accurate` mode to ensure a net improvement.
+- **Risk 3: Local Minima:** The local search repair might get stuck in a local minimum and fail to find a solution even if one is easily reachable.
+  - **Mitigation:** The local search will have a fixed iteration limit to prevent infinite loops. The combination with the initial powerful greedy pass is expected to position the search well, but this is a known limitation of local search algorithms.
+
+# Appendix
+- This PRD is based on the detailed breakdown in `ai-docs/refactor/accurate_hueristic_refactor.md`.
+</PRD>

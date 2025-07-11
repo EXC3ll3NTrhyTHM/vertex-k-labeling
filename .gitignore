@@ -38,6 +38,8 @@ htmlcov/
 # Jupyter notebooks
 *.ipynb
 
+.cursor/
+
 # OS / editor swaps
 .DS_Store
 Thumbs.db

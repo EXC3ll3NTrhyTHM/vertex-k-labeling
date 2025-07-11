@@ -18,7 +18,7 @@ def main():
     parser.add_argument("--solver", type=str, default=DEFAULT_SOLVER_TYPE, choices=["heuristic", "backtracking", "edge-irregular"], help=f"Solver to use: 'heuristic', 'backtracking', or 'edge-irregular' (default: {DEFAULT_SOLVER_TYPE})")
     parser.add_argument("--k-limit", type=int, default=None, help="Upper bound on k for edge-irregular solver")
     parser.add_argument("--progress", action="store_true", help="Print progress of k-limit search for edge-irregular solver")
-    parser.add_argument("--heuristic_mode", type=str, default="accurate", choices=["accurate", "fast"], help="Heuristic mode: 'accurate' uses randomized multi-attempt search (slower, better chance of optimal k), 'fast' uses a single-pass greedy (faster, possibly higher k). Ignored for backtracking solver.")
+    parser.add_argument("--heuristic_mode", type=str, default="accurate", choices=["accurate", "fast", "intelligent"], help="Heuristic mode: 'accurate' uses randomized multi-attempt search (slower, better chance of optimal k), 'fast' uses a single-pass greedy (faster, possibly higher k), 'intelligent' uses a degree-biased and conflict-minimizing approach. Ignored for backtracking solver.")
     parser.add_argument(
         "--animate",
         type=str,
