@@ -6,6 +6,7 @@ A Python toolkit for exploring k-labelings of *Mongolian Tent* graphs, a three-r
 
 * **Graph generation** – build ladder graphs *L*₃,ₙ and Mongolian Tent graphs *MT*₍₃,ₙ₎.
 * **Solvers**
+  * **Branch and Bound solver** – an optimized backtracking algorithm for finding the exact edge irregularity strength (`es`) for `MT(3,n)`.
   * Exact backtracking solver for small *n* (guaranteed optimal but exponential time).
   * Heuristic family for much larger graphs (quick, not always optimal):
     * **Accurate mode** – default randomised-greedy with many vertex/order shuffles to escape local minima.

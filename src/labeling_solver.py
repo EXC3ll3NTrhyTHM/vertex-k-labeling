@@ -225,6 +225,81 @@ def _backtrack_k_labeling(
     del vertex_labels[vertex_to_label]
     return None
 
+class BranchAndBoundSolver:
+    def __init__(self, n: int, on_step: Optional[Callable[["StepEvent"], None]] = None):
+        self.n = n
+        self.adjacency_list = create_mongolian_tent_graph(n)
+        self.on_step = on_step
+        self.vertex_order = self._create_smart_vertex_order(n)
+
+    def _create_smart_vertex_order(self, n: int) -> List[Any]:
+        # Apex vertex 'x'
+        vertex_order = ['x']
+
+        # Top row vertices (v_3,j)
+        for j in range(1, n + 1):
+            vertex_order.append((3, j))
+
+        # Middle row vertices (v_2,j)
+        for j in range(1, n + 1):
+            vertex_order.append((2, j))
+
+        # Bottom row vertices (v_1,j)
+        for j in range(1, n + 1):
+            vertex_order.append((1, j))
+        return vertex_order
+
+    def _is_assignment_valid(self, current_v: Any, labels: Dict[Any, int], used_edge_weights: set[int]) -> Tuple[bool, set[int]]:
+        newly_formed_weights = set()
+        current_label = labels[current_v]
+
+        for neighbor in self.adjacency_list[current_v]:
+            if neighbor in labels:  # If neighbor is already labeled
+                weight = current_label + labels[neighbor]
+                if weight in used_edge_weights or weight in newly_formed_weights:
+                    return False, set()  # Conflict found
+                newly_formed_weights.add(weight)
+        return True, newly_formed_weights
+
+    def _solve_recursive(self, v_idx: int, k: int, labels: Dict[Any, int], used_weights: set[int]) -> Optional[Dict[Any, int]]:
+        if v_idx == len(self.vertex_order):
+            return labels  # All vertices labeled, solution found
+
+        current_v = self.vertex_order[v_idx]
+
+        for label in range(1, k + 1):
+            labels[current_v] = label
+            is_valid, newly_formed_weights = self._is_assignment_valid(current_v, labels, used_weights)
+
+            if is_valid:
+                # Add newly formed weights to the set for the recursive call
+                updated_used_weights = used_weights.union(newly_formed_weights)
+                result = self._solve_recursive(v_idx + 1, k, labels, updated_used_weights)
+                if result is not None:
+                    return result  # Solution found
+
+            # Backtrack: remove the current label and newly formed weights
+            del labels[current_v]
+            # No need to remove from used_weights as we pass a new set to recursive calls
+
+        return None
+
+    def find_es(self) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
+        k_min = calculate_lower_bound(self.n)
+        k = k_min
+
+        while True:
+            print(f"Attempting to find a valid labeling for k = {k} using Branch & Bound...")
+            labels: Dict[Any, int] = {}
+            used_edge_weights: set[int] = set()
+            
+            solution = self._solve_recursive(0, k, labels, used_edge_weights)
+            
+            if solution is not None:
+                print(f"Found a valid labeling for k = {k} using Branch & Bound.")
+                return k, solution
+            k += 1
+
 def find_optimal_k_labeling(
     tent_size: int,
     *,

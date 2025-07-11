@@ -15,7 +15,7 @@ def main():
     parser = argparse.ArgumentParser(description="Find and visualize k-labeling for Mongolian Tent graphs.")
     parser.add_argument("--n", type=int, default=DEFAULT_TENT_SIZE, help=f"Value of n (default: {DEFAULT_TENT_SIZE})")
     parser.add_argument("--graph-type", type=str, default="shape", choices=["shape", "circulant"], help="Graph type: 'shape' (Mongolian Tent) or 'circulant' (r = max(n - DEFAULT_CIRCULANT_OFFSET, 2))")
-    parser.add_argument("--solver", type=str, default=DEFAULT_SOLVER_TYPE, choices=["heuristic", "backtracking", "edge-irregular"], help=f"Solver to use: 'heuristic', 'backtracking', or 'edge-irregular' (default: {DEFAULT_SOLVER_TYPE})")
+    parser.add_argument("--solver", type=str, default=DEFAULT_SOLVER_TYPE, choices=["heuristic", "backtracking", "edge-irregular", "branch-and-bound"], help=f"Solver to use: 'heuristic', 'backtracking', 'edge-irregular', or 'branch-and-bound' (default: {DEFAULT_SOLVER_TYPE})")
     parser.add_argument("--k-limit", type=int, default=None, help="Upper bound on k for edge-irregular solver")
     parser.add_argument("--progress", action="store_true", help="Print progress of k-limit search for edge-irregular solver")
     parser.add_argument("--heuristic_mode", type=str, default="accurate", choices=["accurate", "fast", "intelligent"], help="Heuristic mode: 'accurate' uses randomized multi-attempt search (slower, better chance of optimal k), 'fast' uses a single-pass greedy (faster, possibly higher k), 'intelligent' uses a degree-biased and conflict-minimizing approach. Ignored for backtracking solver.")
@@ -109,8 +109,15 @@ def main():
         lower_bound = max((len(neighbors) for neighbors in graph.values()), default=0)
         gap = k - lower_bound if isinstance(k, int) else "N/A"
         solver_name = "Edge-Irregular Backtracking"
+    elif solver_type == "branch-and-bound":
+        from src.labeling_solver import BranchAndBoundSolver
+        solver = BranchAndBoundSolver(n, on_step=on_step_cb)
+        k, labeling = solver.find_es()
+        lower_bound = k # Branch and Bound finds the optimal k
+        gap = 0
+        solver_name = "Branch and Bound"
     else:
-        print("Invalid solver type. Please choose 'heuristic' or 'backtracking'.")
+        print("Invalid solver type. Please choose 'heuristic', 'backtracking', 'edge-irregular', or 'branch-and-bound'.")
         return
     end_time = time.time()
     time_taken = end_time - start_time
