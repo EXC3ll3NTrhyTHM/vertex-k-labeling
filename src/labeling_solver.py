@@ -11,7 +11,7 @@ References:
     - ai-docs/fixes/fix_backtracking_performance.md (optimization notes)
     - ai-docs/enhancments/enhancement01_Task_1.md (solver feature roadmap)
 """
-from src.graph_generator import create_mongolian_tent_graph
+from src.graph_generator import create_mongolian_tent_graph, generate_circulant_graph
 from src.graph_properties import calculate_lower_bound
 from src.constants import MAX_K_MULTIPLIER_DEFAULT, GREEDY_ATTEMPTS_DEFAULT
 from typing import Any, Tuple, Union, Dict, List, Optional, Callable
@@ -70,7 +70,18 @@ def _get_vertex_sort_key(v: Union[Tuple[int, int], str]) -> Tuple[int, str, str]
         # Ensure the third element is also a string of consistent length
         return (2, str(v).zfill(10), '000') # Make all tuples (int, str, str)
 
-def is_labeling_valid(adjacency_list: Dict[Any, List[Any]], vertex_labels: Dict[Any, int], last_vertex: Optional[Any] = None) -> bool:
+def _get_generic_vertex_sort_key(v: Any) -> Tuple[int, ...]:
+    """Return a stable sort key for any vertex type."""
+    if isinstance(v, tuple): # For Mongolian Tent (row, col)
+        return (0, v[0], v[1])
+    elif isinstance(v, int): # For Circulant graphs (integer IDs)
+        return (1, v)
+    elif v == 'x': # For Mongolian Tent apex
+        return (2,)
+    else: # Fallback for other types
+        return (3, str(v))
+
+def is_labeling_valid(adjacency_list: Dict[Any, List[Any]], vertex_labels: Dict[Any, int], last_vertex: Optional[Any] = None, sort_key_func: Callable[[Any], Tuple[int, ...]] = _get_vertex_sort_key) -> bool:
     """
     Check if the current labeling is valid for the graph.
 
@@ -97,7 +108,7 @@ def is_labeling_valid(adjacency_list: Dict[Any, List[Any]], vertex_labels: Dict[
                 continue
             for target_vertex in neighbors:
                 if target_vertex != last_vertex and target_vertex in vertex_labels:
-                    if _get_vertex_sort_key(source_vertex) < _get_vertex_sort_key(target_vertex):
+                    if sort_key_func(source_vertex) < sort_key_func(target_vertex):
                         existing_weights.add(vertex_labels[source_vertex] + vertex_labels[target_vertex])
         # Check new weights from the last vertex
         for neighbor in adjacency_list[last_vertex]:
@@ -114,7 +125,7 @@ def is_labeling_valid(adjacency_list: Dict[Any, List[Any]], vertex_labels: Dict[
         if source_vertex not in vertex_labels:
             continue
         for target_vertex in neighbors:
-            if target_vertex in vertex_labels and _get_vertex_sort_key(source_vertex) < _get_vertex_sort_key(target_vertex):
+            if target_vertex in vertex_labels and sort_key_func(source_vertex) < sort_key_func(target_vertex):
                 weight = vertex_labels[source_vertex] + vertex_labels[target_vertex]
                 if weight in weights:
                     return False
@@ -139,7 +150,7 @@ def _maybe_emit(callback: Optional[Callable[["StepEvent"], None]], event: Option
             # Fail-safe: ignore animation issues
             pass
 
-def _backtrack_k_labeling(
+def _backtrack_k_labeling_generic(
     adjacency_list: Dict[Any, List[Any]],
     max_k_value: int,
     vertex_labels: Dict[Any, int],
@@ -165,7 +176,7 @@ def _backtrack_k_labeling(
     """
     if not unlabeled_vertices:
         # Base case: all vertices are labeled — verify full validity before accepting
-        if is_labeling_valid(adjacency_list, vertex_labels):
+        if is_labeling_valid(adjacency_list, vertex_labels, sort_key_func=_get_generic_vertex_sort_key):
             return vertex_labels
         return None
 
@@ -203,7 +214,7 @@ def _backtrack_k_labeling(
                 used_weights[w] = True
 
             # Recurse with updated weights
-            result = _backtrack_k_labeling(
+            result = _backtrack_k_labeling_generic(
                 adjacency_list,
                 max_k_value,
                 vertex_labels,
@@ -300,6 +311,82 @@ class BranchAndBoundSolver:
                 return k, solution
             k += 1
 
+def find_optimal_k_labeling_circulant(
+    n: int,
+    r: int,
+    *,
+    on_step: Optional[Callable[["StepEvent"], None]] = None,
+    on_event: Optional[Callable[["StepEvent"], None]] = None,
+) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
+    """
+    Find the optimal (minimum) k and a valid labeling for a Circulant graph.
+    """
+    if n <= 0:
+        return None, None
+
+    adjacency_list = generate_circulant_graph(n, r)
+    if not adjacency_list: # Handle invalid circulant graph parameters
+        print(f"Invalid parameters for circulant graph: n={n}, r={r}")
+        return None, None
+
+    vertices = sorted(adjacency_list.keys(), key=_get_generic_vertex_sort_key, reverse=True) # Sort for consistent behavior
+    
+    # Determine a reasonable lower bound for circulant graphs.
+    # This might need to be refined based on graph properties.
+    # For now, a simple lower bound could be based on max degree or a small constant.
+    # For circulant graphs, the degree is (n-1) for K_n, or (n-6) for the modified one.
+    # A simple lower bound could be max_degree + 1, or 1 if no edges.
+    max_degree = max((len(adj) for adj in adjacency_list.values()), default=0)
+    k = max_degree + 1 if max_degree > 0 else 1 # A very basic lower bound
+
+    while True:
+        print(f"Attempting to find a valid labeling for k = {k} for Circulant graph C({n}, {r})...")
+        used_weights = _init_used_weights(2 * k + 1)
+        callback = on_event if on_event is not None else on_step
+        labeling = _backtrack_k_labeling_generic(adjacency_list, k, {}, vertices, used_weights, callback)
+        if labeling is not None and is_labeling_valid(adjacency_list, labeling, sort_key_func=_get_generic_vertex_sort_key):
+            print(f"Found a valid labeling for k = {k} for Circulant graph C({n}, {r}).")
+            return k, labeling
+        k += 1
+
+def find_optimal_k_labeling_circulant(
+    n: int,
+    r: int,
+    *,
+    on_step: Optional[Callable[["StepEvent"], None]] = None,
+    on_event: Optional[Callable[["StepEvent"], None]] = None,
+) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
+    """
+    Find the optimal (minimum) k and a valid labeling for a Circulant graph.
+    """
+    if n <= 0:
+        return None, None
+
+    adjacency_list = generate_circulant_graph(n, r)
+    if not adjacency_list: # Handle invalid circulant graph parameters
+        print(f"Invalid parameters for circulant graph: n={n}, r={r}")
+        return None, None
+
+    vertices = sorted(adjacency_list.keys(), key=_get_generic_vertex_sort_key, reverse=True) # Sort for consistent behavior
+    
+    # Determine a reasonable lower bound for circulant graphs.
+    # This might need to be refined based on graph properties.
+    # For now, a simple lower bound could be based on max degree or a small constant.
+    # For circulant graphs, the degree is (n-1) for K_n, or (n-6) for the modified one.
+    # A simple lower bound could be max_degree + 1, or 1 if no edges.
+    max_degree = max((len(adj) for adj in adjacency_list.values()), default=0)
+    k = max_degree + 1 if max_degree > 0 else 1 # A very basic lower bound
+
+    while True:
+        print(f"Attempting to find a valid labeling for k = {k} for Circulant graph C({n}, {r})...")
+        used_weights = _init_used_weights(2 * k + 1)
+        callback = on_event if on_event is not None else on_step
+        labeling = _backtrack_k_labeling_generic(adjacency_list, k, {}, vertices, used_weights, callback)
+        if labeling is not None and is_labeling_valid(adjacency_list, labeling, sort_key_func=_get_generic_vertex_sort_key):
+            print(f"Found a valid labeling for k = {k} for Circulant graph C({n}, {r}).")
+            return k, labeling
+        k += 1
+
 def find_optimal_k_labeling(
     tent_size: int,
     *,
@@ -332,8 +419,8 @@ def find_optimal_k_labeling(
         # Start backtracking with a bit-array mask for possible edge weights (0..2*k)
         used_weights = _init_used_weights(2 * k + 1)
         callback = on_event if on_event is not None else on_step
-        labeling = _backtrack_k_labeling(adjacency_list, k, {}, vertices, used_weights, callback)
-        if labeling is not None and is_labeling_valid(adjacency_list, labeling):
+        labeling = _backtrack_k_labeling_generic(adjacency_list, k, {}, vertices, used_weights, callback)
+        if labeling is not None and is_labeling_valid(adjacency_list, labeling, sort_key_func=_get_vertex_sort_key):
             print(f"Found a valid labeling for k = {k}")
             return k, labeling
         k += 1
@@ -444,7 +531,7 @@ def greedy_k_labeling(
                 break  # End this attempt
 
         if len(vertex_labels) == len(vertices):
-            if is_labeling_valid(adjacency_list, vertex_labels):
+            if is_labeling_valid(adjacency_list, vertex_labels, sort_key_func=_get_generic_vertex_sort_key):
                 return vertex_labels
 
     return None

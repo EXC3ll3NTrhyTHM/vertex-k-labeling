@@ -39,7 +39,8 @@ def visualize_k_labeling(
     solver_name: str | None = None,
 ) -> Path:
     if validate:
-        assert is_labeling_valid(graph, labeling), "Labeling is not valid (duplicate edge weights)."
+        from src.labeling_solver import _get_generic_vertex_sort_key
+        assert is_labeling_valid(graph, labeling, sort_key_func=_get_generic_vertex_sort_key), "Labeling is not valid (duplicate edge weights)."
 
     fmt = Path(output).suffix.lstrip(".") or "png"
     dest_path = Path(output)
@@ -51,6 +52,8 @@ def visualize_k_labeling(
     dot = Graph(format=fmt, engine=engine)  # type: ignore
     if shaped:
         dot.attr(rankdir="TB")
+    else: # For circulant graphs, set up a circular layout
+        dot.attr(overlap="false", splines="true", sep="0.5", K="0.6") # Adjust these for better layout
 
     # Add a global label for the graph with the k values
     label_text = []
@@ -110,7 +113,7 @@ def visualize_k_labeling(
             x = radius * math.cos(angle)
             y = radius * math.sin(angle)
             # pos attribute with ! to fix position
-            dot.node(format_vertex_id(v), label=str(v), pos=f"{x},{y}!")
+            dot.node(format_vertex_id(v), label=f"{labeling.get(v, '')}", pos=f"{x},{y}!")
 
     # Add edges with weights
     added: set[tuple] = set()

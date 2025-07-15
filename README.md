@@ -48,8 +48,8 @@ $ python main.py --n <n_value> --animate live
 $ python main.py --n <n_value> --animate record
 #    For backtracking solver:
 $ python main.py --n <n_value> --solver backtracking
-#    Circulant graph generation:
-$ python main.py --graph-type circulant --n <n_value> --r <r_value>
+#    Circulant graph k-labeling:
+$ python main.py --graph-type circulant --n <n_value>
 ```
 
 The script prints a feasible *k* and saves a visualisation (`mt3_<n>_heuristic_<mode>.png` or `mt3_<n>_backtracking.png`).
