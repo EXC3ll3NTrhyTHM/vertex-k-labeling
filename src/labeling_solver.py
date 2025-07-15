@@ -345,6 +345,8 @@ def greedy_k_labeling(
     *,
     on_step: Optional[Callable[["StepEvent"], None]] = None,
     on_event: Optional[Callable[["StepEvent"], None]] = None,
+    failure_counts: Optional[Dict[Any, int]] = None,
+    backjumps_allowed: int = 3,
 ) -> Optional[Dict[Any, int]]:
     """A more robust greedy solver that makes multiple randomized attempts.
 
@@ -353,56 +355,98 @@ def greedy_k_labeling(
         - ai-docs/fixes/fix_greedy_inefficiency.md (shuffle and attempt count tuning)
     """
     import random
+
+    # Pre-calculate degrees for sorting if using failure counts
+    degrees = {}
+    if failure_counts is not None:
+        degrees = {v: len(neighbors) for v, neighbors in adjacency_list.items()}
+
     for _ in range(attempts):
         vertices = list(adjacency_list.keys())
-        random.shuffle(vertices)
+        if failure_counts is not None:
+            # Sort by failure count (desc), then degree (desc) as a tie-breaker
+            vertices.sort(key=lambda v: (failure_counts.get(v, 0), degrees.get(v, 0)), reverse=True)
+        else:
+            random.shuffle(vertices)
+
         vertex_labels: dict = {}
-        # Initialize used_weights bit-array for incremental conflict checks
         used_weights = [False] * (2 * k_upper_bound + 1)
-        success = True
-        for vertex in vertices:
-            labels = list(range(1, k_upper_bound + 1))
-            random.shuffle(labels)
-            assigned = False
-            for label in labels:
-                temp_weights: List[int] = []
-                conflict = False
+        vertex_index = 0
+        backjumps = 0
+
+        while vertex_index < len(vertices):
+            vertex = vertices[vertex_index]
+            
+            # Find the best label using conflict minimization
+            best_label = -1
+            min_conflict_score = float('inf')
+            conflict_set = set()
+
+            possible_labels = list(range(1, k_upper_bound + 1))
+            random.shuffle(possible_labels)
+
+            for label in possible_labels:
+                is_valid_label = True
+                current_conflict_set = set()
                 for neighbor in adjacency_list[vertex]:
                     if neighbor in vertex_labels:
                         weight = label + vertex_labels[neighbor]
-                        if StepEvent and EventType:
-                            _maybe_emit(
-                                on_event,
-                                StepEvent(
-                                    EventType.EDGE_WEIGHT_CALCULATED,
-                                    {"edge": (vertex, neighbor), "weight": weight},
-                                ),
-                            )
                         if used_weights[weight]:
-                            conflict = True
+                            is_valid_label = False
+                            current_conflict_set.add(neighbor)
+                
+                if is_valid_label:
+                    conflict_score = _calculate_conflict_score(
+                        label, vertex, adjacency_list, vertex_labels, used_weights, k_upper_bound
+                    )
+                    if conflict_score < min_conflict_score:
+                        min_conflict_score = conflict_score
+                        best_label = label
+                else:
+                    conflict_set.update(current_conflict_set)
+
+            if best_label != -1:
+                vertex_labels[vertex] = best_label
+                for neighbor in adjacency_list[vertex]:
+                    if neighbor in vertex_labels:
+                        weight = best_label + vertex_labels[neighbor]
+                        used_weights[weight] = True
+                vertex_index += 1
+            else:
+                # Backjump logic
+                if backjumps < backjumps_allowed and conflict_set:
+                    # Find the most recently labeled vertex in the conflict set
+                    jump_target_index = -1
+                    for i in range(vertex_index - 1, -1, -1):
+                        if vertices[i] in conflict_set:
+                            jump_target_index = i
                             break
-                        temp_weights.append(weight)
-                if not conflict:
-                    vertex_labels[vertex] = label
-                    if StepEvent and EventType:
-                        _maybe_emit(
-                            on_event,
-                            StepEvent(EventType.VERTEX_LABELED, {"vertex": vertex, "label": label}),
-                        )
-                    for w in temp_weights:
-                        used_weights[w] = True
-                    assigned = True
-                    break
-            if not assigned:
-                success = False
-                break
-        if success:
-            # Verify the final labeling is truly valid (no duplicate edge weights)
+                    
+                    if jump_target_index != -1:
+                        # Unlabel vertices from current back to jump target
+                        for i in range(jump_target_index + 1, vertex_index + 1):
+                            v_to_unlabel = vertices[i]
+                            if v_to_unlabel in vertex_labels:
+                                # Un-mark weights
+                                for neighbor in adjacency_list[v_to_unlabel]:
+                                    if neighbor in vertex_labels and neighbor != v_to_unlabel:
+                                        weight = vertex_labels[v_to_unlabel] + vertex_labels[neighbor]
+                                        used_weights[weight] = False
+                                del vertex_labels[v_to_unlabel]
+                        
+                        vertex_index = jump_target_index
+                        backjumps += 1
+                        continue
+
+                # If backjump fails or not allowed, fail the attempt
+                if failure_counts is not None:
+                    failure_counts[vertex] += 1
+                break  # End this attempt
+
+        if len(vertex_labels) == len(vertices):
             if is_labeling_valid(adjacency_list, vertex_labels):
-                if StepEvent and EventType:
-                    _maybe_emit(on_event, StepEvent(EventType.SOLUTION_FOUND, {"labels": vertex_labels}))
                 return vertex_labels
-            # Otherwise, discard and continue attempts
+
     return None
 
 # --------------------
@@ -503,6 +547,9 @@ def find_feasible_k_labeling(
     k = lower_bound
     k_upper_bound = lower_bound * max_k_multiplier  # safety upper limit
 
+    # Initialize failure counts for conflict-guided vertex ordering in 'accurate' mode
+    failure_counts = {v: 0 for v in adjacency_list}
+
     print(
         f"\n[Heuristic Search] Starting search for n={tent_size} from k={lower_bound} (limit: k={k_upper_bound}) using '{algorithm}' heuristic..."
     )
@@ -543,6 +590,7 @@ def find_feasible_k_labeling(
                 k,
                 attempts=num_attempts,
                 on_event=callback,
+                failure_counts=failure_counts,
             )
             if labeling and is_labeling_valid(adjacency_list, labeling):
                 print(f"Heuristic search found a valid labeling with k={k} for n={tent_size}.")
@@ -551,4 +599,30 @@ def find_feasible_k_labeling(
     print(
         f"Heuristic search failed to find a solution for n={tent_size} within the k limit (k>{k_upper_bound})."
     )
-    return None, None 
+    return None, None
+
+def _calculate_conflict_score(
+    label: int,
+    vertex: Any,
+    adjacency_list: Dict[Any, List[Any]],
+    vertex_labels: Dict[Any, int],
+    used_weights: List[bool],
+    k_upper_bound: int,
+) -> int:
+    """
+    Calculates the conflict score for a potential label.
+    The score is the sum of how many label choices are eliminated for all unassigned neighbors.
+    A lower score is better.
+    """
+    conflict_score = 0
+    # For each unassigned neighbor, count how many of its potential labels would become invalid.
+    for neighbor in adjacency_list[vertex]:
+        if neighbor not in vertex_labels:  # Unassigned neighbor
+            # For this neighbor, iterate through all its possible labels
+            for neighbor_label in range(1, k_upper_bound + 1):
+                weight = label + neighbor_label
+                # If this weight is already used somewhere in the graph,
+                # then this `neighbor_label` is not a valid choice for `neighbor` anymore.
+                if weight < len(used_weights) and used_weights[weight]:
+                    conflict_score += 1
+    return conflict_score
