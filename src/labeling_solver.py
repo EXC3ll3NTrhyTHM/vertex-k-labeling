@@ -12,7 +12,7 @@ References:
     - ai-docs/enhancments/enhancement01_Task_1.md (solver feature roadmap)
 """
 from src.graph_generator import create_mongolian_tent_graph, generate_circulant_graph
-from src.graph_properties import calculate_lower_bound
+from src.graph_properties import calculate_lower_bound, calculate_circulant_lower_bound
 from src.constants import MAX_K_MULTIPLIER_DEFAULT, GREEDY_ATTEMPTS_DEFAULT
 from typing import Any, Tuple, Union, Dict, List, Optional, Callable
 
@@ -336,8 +336,7 @@ def find_optimal_k_labeling_circulant(
     # For now, a simple lower bound could be based on max degree or a small constant.
     # For circulant graphs, the degree is (n-1) for K_n, or (n-6) for the modified one.
     # A simple lower bound could be max_degree + 1, or 1 if no edges.
-    max_degree = max((len(adj) for adj in adjacency_list.values()), default=0)
-    k = max_degree + 1 if max_degree > 0 else 1 # A very basic lower bound
+    k = calculate_circulant_lower_bound(n, r) # Use the theoretical lower bound
 
     while True:
         print(f"Attempting to find a valid labeling for k = {k} for Circulant graph C({n}, {r})...")
@@ -374,8 +373,7 @@ def find_optimal_k_labeling_circulant(
     # For now, a simple lower bound could be based on max degree or a small constant.
     # For circulant graphs, the degree is (n-1) for K_n, or (n-6) for the modified one.
     # A simple lower bound could be max_degree + 1, or 1 if no edges.
-    max_degree = max((len(adj) for adj in adjacency_list.values()), default=0)
-    k = max_degree + 1 if max_degree > 0 else 1 # A very basic lower bound
+    k = calculate_circulant_lower_bound(n, r) # Use the theoretical lower bound
 
     while True:
         print(f"Attempting to find a valid labeling for k = {k} for Circulant graph C({n}, {r})...")

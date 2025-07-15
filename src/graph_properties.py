@@ -3,6 +3,20 @@ import math
 from typing import Dict, List, Any, Tuple
 import collections
 
+def calculate_circulant_lower_bound(n: int, r: int) -> int:
+    """
+    Calculates the theoretical lower bound for the edge irregularity strength (es) of a circulant graph (Cn,r).
+    Formula: max{ceil((nr+2)/4), r}
+    """
+    if n <= 0 or r <= 0:
+        return 0
+
+    # Calculate the first part of the formula: ceil((n * r + 2) / 4)
+    part1 = math.ceil((n * r + 2) / 4)
+
+    # Return the maximum of part1 and r
+    return max(part1, r)
+
 
 """
 Graph property calculations for Mongolian Tent and related graphs.
