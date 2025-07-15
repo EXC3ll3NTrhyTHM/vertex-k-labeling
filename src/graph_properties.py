@@ -29,12 +29,14 @@ References:
     - ai-docs/fixes/fix_greedy_inefficiency.md (context on degree metrics improvements)
     - ai-docs/enhancments/enhancement02_shape_graph.md (diameter computation motivation)
 """
-def calculate_graph_metrics(adjacency_list: Dict[Any, List[Any]]) -> Tuple[int, int]:
+import networkx as nx
+
+def calculate_graph_metrics(graph: nx.Graph) -> tuple:
     """
-    Calculate the number of edges and the maximum degree of a graph.
+    Calculates the number of edges and the maximum degree of a NetworkX graph.
 
     Args:
-        adjacency_list (dict): The graph represented as an adjacency list.
+        graph (nx.Graph): The graph represented as a NetworkX graph object.
 
     Returns:
         tuple: A tuple containing the number of edges and the maximum degree.
@@ -43,11 +45,11 @@ def calculate_graph_metrics(adjacency_list: Dict[Any, List[Any]]) -> Tuple[int, 
         - ai-docs/algorithms/backtracking_algorithm.md (edge enumeration requirements)
         - ai-docs/fixes/fix_greedy_inefficiency.md (performance considerations)
     """
-    if not adjacency_list:
+    if not graph:
         return 0, 0
 
-    edge_count = sum(len(neighbors) for neighbors in adjacency_list.values()) // 2
-    max_degree = max(len(neighbors) for neighbors in adjacency_list.values()) if adjacency_list else 0
+    edge_count = graph.number_of_edges()
+    max_degree = max([degree for node, degree in graph.degree()]) if graph.nodes() else 0
     
     return edge_count, max_degree
 

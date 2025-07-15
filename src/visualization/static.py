@@ -105,7 +105,7 @@ def visualize_k_labeling(
     else:
         import math
 
-        node_ids = sorted([v for v in graph.keys() if isinstance(v, int)])
+        node_ids = sorted([v for v in graph.nodes() if isinstance(v, int)])
         n_nodes = len(node_ids)
         radius = 2.0  # arbitrary radius
         for idx, v in enumerate(node_ids):
@@ -117,8 +117,8 @@ def visualize_k_labeling(
 
     # Add edges with weights
     added: set[tuple] = set()
-    for u, neighbors in graph.items():
-        for v in neighbors:
+    for u in graph.nodes():
+        for v in graph.neighbors(u):
             if (v, u) in added:
                 continue
             added.add((u, v))

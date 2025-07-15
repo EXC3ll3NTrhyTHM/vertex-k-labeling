@@ -51,7 +51,7 @@ $ python main.py --graph-type mongolian_tent --n <n_value> --solver backtracking
 #    Circulant graph k-labeling:
 $ python main.py --graph-type circulant --n <n_value>
 #    Mongolian Tent graph k-labeling (example for n=5):
-$ python main.py --graph-type shape --n 5
+$ python main.py --graph-type mongolian_tent --n 5
 ```
 
 The script prints a feasible *k* and saves a visualisation (`mt3_<n>_heuristic_<mode>.png` or `mt3_<n>_backtracking.png`).
