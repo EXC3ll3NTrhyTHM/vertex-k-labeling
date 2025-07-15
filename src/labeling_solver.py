@@ -386,16 +386,18 @@ def find_optimal_k_labeling_circulant(
         k += 1
 
 def find_optimal_k_labeling(
-    tent_size: int,
+    graph_type: str,
+    graph_params: Dict[str, Any],
     *,
     on_step: Optional[Callable[["StepEvent"], None]] = None,
     on_event: Optional[Callable[["StepEvent"], None]] = None,
 ) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
     """
-    Find the optimal (minimum) k and a valid labeling for the Mongolian Tent graph MT_3,n.
+    Find the optimal (minimum) k and a valid labeling for a given graph.
 
     Args:
-        tent_size: size parameter for the Mongolian Tent graph.
+        graph_type: The type of graph to generate ("mongolian_tent" or "circulant").
+        graph_params: A dictionary of parameters specific to the graph type (e.g., {"n": 5} for Mongolian Tent, {"n": 5, "r": 2} for Circulant).
 
     Returns:
         A tuple (k, labeling) where k is the minimum label value for which a valid labeling exists and labeling is the mapping.
@@ -404,22 +406,47 @@ def find_optimal_k_labeling(
         - ai-docs/initial-design/task_2.md (exact solver deliverable)
         - ai-docs/fixes/large_n_solution.md (scaling guidance for large n)
     """
-    if tent_size <= 0:
-        return None, None
+    adjacency_list = {}
+    lower_bound = 0
+    graph_description = ""
 
-    adjacency_list = create_mongolian_tent_graph(tent_size)
-    # Sort vertices by degree (descending) to prune the search space
-    vertices = sorted(adjacency_list.keys(), key=lambda v: len(adjacency_list[v]), reverse=True)
-    k = calculate_lower_bound(tent_size)
+    if graph_type == "mongolian_tent":
+        tent_size = graph_params.get("n")
+        if tent_size is None or tent_size <= 0:
+            return None, None
+        adjacency_list = create_mongolian_tent_graph(tent_size)
+        lower_bound = calculate_lower_bound(tent_size)
+        graph_description = f"Mongolian Tent graph (n={tent_size})"
+    elif graph_type == "circulant":
+        n = graph_params.get("n")
+        r = graph_params.get("r")
+        if n is None or r is None or n <= 0 or r <= 0:
+            return None, None
+        adjacency_list = generate_circulant_graph(n, r)
+        if not adjacency_list: # Handle invalid circulant graph parameters
+            print(f"Invalid parameters for circulant graph: n={n}, r={r}")
+            return None, None
+        lower_bound = calculate_circulant_lower_bound(n, r)
+        graph_description = f"Circulant graph C({n}, {r})"
+    else:
+        raise ValueError(f"Unsupported graph type: {graph_type}")
+
+    # Sort vertices for consistent behavior in backtracking
+    if graph_type == "circulant":
+        vertices = sorted(adjacency_list.keys()) # Circulant graphs often benefit from natural vertex order
+    else:
+        vertices = sorted(adjacency_list.keys(), key=lambda v: len(adjacency_list[v]), reverse=True)
+
+    k = lower_bound
 
     while True:
-        print(f"Attempting to find a valid labeling for k = {k}...")
+        print(f"Attempting to find a valid labeling for k = {k} for {graph_description}...")
         # Start backtracking with a bit-array mask for possible edge weights (0..2*k)
         used_weights = _init_used_weights(2 * k + 1)
         callback = on_event if on_event is not None else on_step
         labeling = _backtrack_k_labeling_generic(adjacency_list, k, {}, vertices, used_weights, callback)
-        if labeling is not None and is_labeling_valid(adjacency_list, labeling, sort_key_func=_get_vertex_sort_key):
-            print(f"Found a valid labeling for k = {k}")
+        if labeling is not None and is_labeling_valid(adjacency_list, labeling, sort_key_func=_get_generic_vertex_sort_key):
+            print(f"Found a valid labeling for k = {k} for {graph_description}.")
             return k, labeling
         k += 1
 
@@ -432,6 +459,7 @@ def greedy_k_labeling(
     on_event: Optional[Callable[["StepEvent"], None]] = None,
     failure_counts: Optional[Dict[Any, int]] = None,
     backjumps_allowed: int = 3,
+    graph_type: str = "mongolian_tent", # Added graph_type parameter
 ) -> Optional[Dict[Any, int]]:
     """A more robust greedy solver that makes multiple randomized attempts.
 
@@ -447,12 +475,15 @@ def greedy_k_labeling(
         degrees = {v: len(neighbors) for v, neighbors in adjacency_list.items()}
 
     for _ in range(attempts):
-        vertices = list(adjacency_list.keys())
-        if failure_counts is not None:
-            # Sort by failure count (desc), then degree (desc) as a tie-breaker
-            vertices.sort(key=lambda v: (failure_counts.get(v, 0), degrees.get(v, 0)), reverse=True)
-        else:
-            random.shuffle(vertices)
+        if graph_type == "circulant":
+            vertices = sorted(adjacency_list.keys()) # Circulant graphs often benefit from natural vertex order
+        else: # Default for mongolian_tent and other graphs
+            vertices = list(adjacency_list.keys())
+            if failure_counts is not None:
+                # Sort by failure count (desc), then degree (desc) as a tie-breaker
+                vertices.sort(key=lambda v: (failure_counts.get(v, 0), degrees.get(v, 0)), reverse=True)
+            else:
+                random.shuffle(vertices)
 
         vertex_labels: dict = {}
         used_weights = [False] * (2 * k_upper_bound + 1)
@@ -544,6 +575,7 @@ def _first_fit_greedy_k_labeling(
     k_upper_bound: int,
     *,
     on_step: Optional[Callable[["StepEvent"], None]] = None,
+    graph_type: str = "mongolian_tent", # Added graph_type parameter
 ) -> Optional[Dict[Any, int]]:
     """A single-pass deterministic greedy solver.
 
@@ -557,8 +589,11 @@ def _first_fit_greedy_k_labeling(
         - ai-docs/enhancments/enhancement01_Task_2.md (fast heuristic concept)
     """
 
-    # Order vertices by degree (high -> low) to maximize early pruning.
-    vertices = sorted(adjacency_list.keys(), key=lambda v: len(adjacency_list[v]), reverse=True)
+    if graph_type == "circulant":
+        vertices = sorted(adjacency_list.keys()) # Circulant graphs often benefit from natural vertex order
+    else:
+        # Order vertices by degree (high -> low) to maximize early pruning.
+        vertices = sorted(adjacency_list.keys(), key=lambda v: len(adjacency_list[v]), reverse=True)
 
     vertex_labels: Dict[Any, int] = {}
     # Initialize used_weights bit-array for incremental conflict checks
@@ -599,7 +634,8 @@ def _first_fit_greedy_k_labeling(
     return vertex_labels
 
 def find_feasible_k_labeling(
-    tent_size: int,
+    graph_type: str,
+    graph_params: Dict[str, Any],
     max_k_multiplier: int = MAX_K_MULTIPLIER_DEFAULT,
     num_attempts: int = GREEDY_ATTEMPTS_DEFAULT,
     *,
@@ -608,10 +644,11 @@ def find_feasible_k_labeling(
     on_event: Optional[Callable[["StepEvent"], None]] = None,
 ) -> Tuple[Optional[int], Optional[Dict[Any, int]]]:
     """
-    Find a feasible k-labeling for the Mongolian Tent graph using a heuristic search.
+    Find a feasible k-labeling for a given graph using a heuristic search.
 
     Args:
-        tent_size: the size parameter for the Mongolian Tent graph.
+        graph_type: The type of graph to generate ("mongolian_tent" or "circulant").
+        graph_params: A dictionary of parameters specific to the graph type (e.g., {"n": 5} for Mongolian Tent, {"n": 5, "r": 2} for Circulant).
         max_k_multiplier: multiplier to set an upper bound on k based on the lower bound.
         num_attempts: number of randomized greedy attempts per k value.
 
@@ -622,13 +659,34 @@ def find_feasible_k_labeling(
         - ai-docs/algorithms/heuristic_algorithm.md (search strategy)
         - ai-docs/enhancments/enhancement01_Task_3.md (fast vs accurate modes)
     """
-    if tent_size <= 0:
-        return None, None
+    adjacency_list = {}
+    lower_bound = 0
+    graph_description = ""
+
+    if graph_type == "mongolian_tent":
+        tent_size = graph_params.get("n")
+        if tent_size is None or tent_size <= 0:
+            return None, None
+        adjacency_list = create_mongolian_tent_graph(tent_size)
+        lower_bound = calculate_lower_bound(tent_size)
+        graph_description = f"Mongolian Tent graph (n={tent_size})"
+    elif graph_type == "circulant":
+        n = graph_params.get("n")
+        r = graph_params.get("r")
+        if n is None or r is None or n <= 0 or r <= 0:
+            return None, None
+        adjacency_list = generate_circulant_graph(n, r)
+        if not adjacency_list: # Handle invalid circulant graph parameters
+            print(f"Invalid parameters for circulant graph: n={n}, r={r}")
+            return None, None
+        lower_bound = calculate_circulant_lower_bound(n, r)
+        graph_description = f"Circulant graph C({n}, {r})"
+    else:
+        raise ValueError(f"Unsupported graph type: {graph_type}")
+
     if max_k_multiplier < 1:
         raise ValueError("max_k_multiplier must be at least 1")
 
-    adjacency_list = create_mongolian_tent_graph(tent_size)
-    lower_bound = calculate_lower_bound(tent_size)
     k = lower_bound
     k_upper_bound = lower_bound * max_k_multiplier  # safety upper limit
 
@@ -636,8 +694,9 @@ def find_feasible_k_labeling(
     failure_counts = {v: 0 for v in adjacency_list}
 
     print(
-        f"\n[Heuristic Search] Starting search for n={tent_size} from k={lower_bound} (limit: k={k_upper_bound}) using '{algorithm}' heuristic..."
+        f"\n[Heuristic Search] Starting search for {graph_description} from k={lower_bound} (limit: k={k_upper_bound}) using '{algorithm}' heuristic..."
     )
+
 
     while k <= k_upper_bound:
         if algorithm == "fast":
@@ -646,9 +705,9 @@ def find_feasible_k_labeling(
 
             # 1) Deterministic first-fit pass (very quick)
             callback = on_event if on_event is not None else on_step
-            labeling = _first_fit_greedy_k_labeling(adjacency_list, k, on_step=callback)
-            if labeling and is_labeling_valid(adjacency_list, labeling):
-                print(f"Fast heuristic found a valid labeling with k={k} for n={tent_size} on deterministic pass.")
+            labeling = _first_fit_greedy_k_labeling(adjacency_list, k, on_step=callback, graph_type=graph_type)
+            if labeling and is_labeling_valid(adjacency_list, labeling, sort_key_func=_get_generic_vertex_sort_key):
+                print(f"Fast heuristic found a valid labeling with k={k} for {graph_description} on deterministic pass.")
                 return k, labeling
 
             # 2) Limited randomized passes correlated to n to improve accuracy without large slowdown.
@@ -660,10 +719,11 @@ def find_feasible_k_labeling(
                     k,
                     attempts=1,
                     on_event=callback,
+                    graph_type=graph_type,
                 )
-                if labeling and is_labeling_valid(adjacency_list, labeling):
+                if labeling and is_labeling_valid(adjacency_list, labeling, sort_key_func=_get_generic_vertex_sort_key):
                     print(
-                        f"Fast heuristic found a valid labeling with k={k} for n={tent_size} after randomized pass."
+                        f"Fast heuristic found a valid labeling with k={k} for {graph_description} after randomized pass."
                     )
                     return k, labeling
         else:  # accurate / default multi-attempt heuristic
@@ -676,13 +736,14 @@ def find_feasible_k_labeling(
                 attempts=num_attempts,
                 on_event=callback,
                 failure_counts=failure_counts,
+                graph_type=graph_type,
             )
-            if labeling and is_labeling_valid(adjacency_list, labeling):
-                print(f"Heuristic search found a valid labeling with k={k} for n={tent_size}.")
+            if labeling and is_labeling_valid(adjacency_list, labeling, sort_key_func=_get_generic_vertex_sort_key):
+                print(f"Heuristic search found a valid labeling with k={k} for {graph_description}.")
                 return k, labeling
         k += 1
     print(
-        f"Heuristic search failed to find a solution for n={tent_size} within the k limit (k>{k_upper_bound})."
+        f"Heuristic search failed to find a solution for {graph_description} within the k limit (k>{k_upper_bound})."
     )
     return None, None
 

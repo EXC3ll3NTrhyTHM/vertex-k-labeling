@@ -39,17 +39,19 @@ $ pip install -r requirements.txt
 #    Heuristic solver (accurate mode is default):
 #    Standard run (accurate heuristic mode, no animation):
 #    n_value is optional and defaults to 5
-$ python main.py [--n <n_value>]
+$ python main.py --graph-type mongolian_tent --n <n_value>
 #    Fast heuristic mode:
-$ python main.py --n <n_value> --heuristic_mode fast
+$ python main.py --graph-type mongolian_tent --n <n_value> --heuristic_mode fast
 #    Live animation display:
-$ python main.py --n <n_value> --animate live
+$ python main.py --graph-type mongolian_tent --n <n_value> --animate live
 #    Record animation to GIF/MP4:
-$ python main.py --n <n_value> --animate record
+$ python main.py --graph-type mongolian_tent --n <n_value> --animate record
 #    For backtracking solver:
-$ python main.py --n <n_value> --solver backtracking
+$ python main.py --graph-type mongolian_tent --n <n_value> --solver backtracking
 #    Circulant graph k-labeling:
 $ python main.py --graph-type circulant --n <n_value>
+#    Mongolian Tent graph k-labeling (example for n=5):
+$ python main.py --graph-type shape --n 5
 ```
 
 The script prints a feasible *k* and saves a visualisation (`mt3_<n>_heuristic_<mode>.png` or `mt3_<n>_backtracking.png`).

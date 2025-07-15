@@ -64,7 +64,6 @@ def create_mongolian_tent_graph(tent_size: int) -> Dict[Any, List[Any]]:
 
     return graph
 
-
 def generate_circulant_graph(n: int, r: int) -> Dict[int, List[int]]:
     """
     Generate a circulant graph by removing edges from the complete circulant K_n to reduce each vertex's degree by 5.
