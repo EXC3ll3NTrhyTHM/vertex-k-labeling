@@ -1,4 +1,4 @@
-"""# Graph Data Structure
+# Graph Data Structure
 
 The graphs in this project are represented using an **adjacency list**. This is implemented as a Python dictionary (`collections.defaultdict(list)`) where:
 - Each **key** in the dictionary represents a vertex in the graph.
@@ -140,4 +140,4 @@ The complete graph `K_8` has generators `s=1, 2, 3, 4`. After removing `s=1, 2, 
     6: [1, 3],
     7: [2, 4]
 }
-```""
+```
