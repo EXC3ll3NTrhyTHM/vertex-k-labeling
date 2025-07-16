@@ -70,7 +70,8 @@ def calculate_lower_bound(tent_size: int) -> int:
     if tent_size <= 0:
         return 0
     
-    graph = create_mongolian_tent_graph(tent_size)
+    graph_adj = create_mongolian_tent_graph(tent_size)
+    graph = nx.Graph(graph_adj)
     edge_count, max_degree = calculate_graph_metrics(graph)
     
     # Lower bound formula: k >= max(ceil((|E(G)| + 1) / 2), delta(G))
