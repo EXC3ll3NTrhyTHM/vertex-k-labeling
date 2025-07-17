@@ -29,14 +29,13 @@ References:
     - ai-docs/fixes/fix_greedy_inefficiency.md (context on degree metrics improvements)
     - ai-docs/enhancments/enhancement02_shape_graph.md (diameter computation motivation)
 """
-import networkx as nx
 
-def calculate_graph_metrics(graph: nx.Graph) -> tuple:
+def calculate_graph_metrics_from_adjacency(adjacency_list: Dict[Any, List[Any]]) -> tuple:
     """
-    Calculates the number of edges and the maximum degree of a NetworkX graph.
+    Calculates the number of edges and the maximum degree from an adjacency list.
 
     Args:
-        graph (nx.Graph): The graph represented as a NetworkX graph object.
+        adjacency_list: The graph represented as an adjacency list dictionary.
 
     Returns:
         tuple: A tuple containing the number of edges and the maximum degree.
@@ -45,13 +44,39 @@ def calculate_graph_metrics(graph: nx.Graph) -> tuple:
         - ai-docs/algorithms/backtracking_algorithm.md (edge enumeration requirements)
         - ai-docs/fixes/fix_greedy_inefficiency.md (performance considerations)
     """
-    if not graph:
+    if not adjacency_list:
         return 0, 0
 
-    edge_count = graph.number_of_edges()
-    max_degree = max([degree for node, degree in graph.degree()]) if graph.nodes() else 0
+    # Count edges (each edge is counted twice in undirected graph)
+    edge_count = sum(len(neighbors) for neighbors in adjacency_list.values()) // 2
+    
+    # Find maximum degree
+    max_degree = max(len(neighbors) for neighbors in adjacency_list.values()) if adjacency_list else 0
     
     return edge_count, max_degree
+
+# Legacy function for backward compatibility - try to use networkx if available
+def calculate_graph_metrics(graph) -> tuple:
+    """
+    Calculates the number of edges and the maximum degree of a graph.
+    Supports both NetworkX graphs and adjacency list dictionaries.
+    """
+    try:
+        import networkx as nx
+        if isinstance(graph, nx.Graph):
+            if not graph:
+                return 0, 0
+            edge_count = graph.number_of_edges()
+            max_degree = max([degree for node, degree in graph.degree()]) if graph.nodes() else 0
+            return edge_count, max_degree
+    except ImportError:
+        pass
+    
+    # Fallback to adjacency list calculation
+    if isinstance(graph, dict):
+        return calculate_graph_metrics_from_adjacency(graph)
+    
+    return 0, 0
 
 def calculate_lower_bound(tent_size: int) -> int:
     """
@@ -71,8 +96,7 @@ def calculate_lower_bound(tent_size: int) -> int:
         return 0
     
     graph_adj = create_mongolian_tent_graph(tent_size)
-    graph = nx.Graph(graph_adj)
-    edge_count, max_degree = calculate_graph_metrics(graph)
+    edge_count, max_degree = calculate_graph_metrics_from_adjacency(graph_adj)
     
     # Lower bound formula: k >= max(ceil((|E(G)| + 1) / 2), delta(G))
     lower_bound_k = max(math.ceil((edge_count + 1) / 2), max_degree)

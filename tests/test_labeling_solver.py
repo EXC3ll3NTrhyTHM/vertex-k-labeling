@@ -7,7 +7,7 @@ class TestLabelingSolver(unittest.TestCase):
     def test_find_minimum_k_labeling_n1(self):
         """Test the solver for n=1"""
         # For n=1, the lower bound for k is 2. The solver should find this.
-        k, labeling = find_optimal_k_labeling(1)
+        k, labeling = find_optimal_k_labeling("mongolian_tent", {"n": 1})
         self.assertEqual(k, 2)
         self.assertIsNotNone(labeling)
         
@@ -18,7 +18,7 @@ class TestLabelingSolver(unittest.TestCase):
     def test_find_minimum_k_labeling_n2(self):
         """Test the solver for n=2"""
         # For n=2 with three rows, the lower bound for k is 5, but the actual optimal k is 6.
-        k, labeling = find_optimal_k_labeling(2)
+        k, labeling = find_optimal_k_labeling("mongolian_tent", {"n": 2})
         self.assertEqual(k, 6)
         self.assertIsNotNone(labeling)
         
