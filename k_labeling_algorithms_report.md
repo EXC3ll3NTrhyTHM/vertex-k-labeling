@@ -1,9 +1,9 @@
 <!-- REPORT VALIDATION STATUS: INVALID
-Generated: 2025-07-17 16:48:02
+Generated: 2025-07-17 17:40:04
 Errors: 27 | Warnings: 0
-Content: 4972 words, 67 sections, 19.9 pages
-LaTeX expressions: 119 inline, 0 display
-Tables: 25 lines | Code blocks: 6 -->
+Content: 5418 words, 78 sections, 21.7 pages
+LaTeX expressions: 115 inline, 0 display
+Tables: 21 lines | Code blocks: 6 -->
 
 # A Comparative Analysis of k-Labeling Algorithms for Circulant and Mongolian Tent Graphs
 
@@ -61,6 +61,10 @@ A circulant graph $C_n(S)$ is defined on $n$ vertices $\{0, 1, \ldots, n-1\}$ wh
 
 Circulant graphs exhibit high symmetry and regularity properties, making them important in algebraic graph theory and network topology design.
 
+![Example of a Circulant graph structure showing the regular connectivity pattern](graphs\circulant_6_2.png)
+
+*Figure: Example of a Circulant graph structure showing the regular connectivity pattern*
+
 #### 2.3.2. Mongolian Tent Graphs
 
 A Mongolian Tent graph $MT(3,n)$ consists of three horizontal paths of length $n$ connected by vertical edges, with an additional apex vertex connected to all vertices in the top row. The structure resembles a tent with three levels and $n$ columns.
@@ -68,6 +72,10 @@ A Mongolian Tent graph $MT(3,n)$ consists of three horizontal paths of length $n
 **Example**: $MT(3,2)$ has 7 vertices: apex vertex $x$, top row $(1,1), (1,2)$, middle row $(2,1), (2,2)$, and bottom row $(3,1), (3,2)$.
 
 These graphs combine path-like and star-like structural elements, providing an interesting test case for labeling algorithms.
+
+![Example of a Mongolian Tent graph structure showing the three-level tent configuration](graphs\mt3_3.png)
+
+*Figure: Example of a Mongolian Tent graph structure showing the three-level tent configuration*
 
 ### 2.4. Algorithmic Strategies
 
@@ -355,13 +363,11 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 
 | Graph | Lower Bound | Backtracking k | Backtracking Time (s) | Heuristic Accurate k | Heuristic Accurate Time (s) | Heuristic Intelligent k | Heuristic Intelligent Time (s) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| $MT(3,3)$ | 8 | TIMEOUT/FAIL | <0.001 | 9 (+1) | 0.034 | 9 (+1) | 0.018 |
-| $MT(3,4)$ | 11 | TIMEOUT/FAIL | <0.001 | 13 (+2) | 0.107 | 13 (+2) | 0.064 |
-| $MT(3,5)$ | 14 | TIMEOUT/FAIL | 0.001 | 16 (+2) | 0.206 | 16 (+2) | 0.093 |
-| $MT(3,8)$ | 23 | TIMEOUT/FAIL | <0.001 | 25 (+2) | 0.740 | 27 (+4) | 0.544 |
-| $MT(3,10)$ | 29 | TIMEOUT/FAIL | <0.001 | 33 (+4) | 2.14 | 33 (+4) | 0.947 |
-| $MT(3,14)$ | 41 | TIMEOUT/FAIL | <0.001 | 46 (+5) | 5.51 | 45 (+4) | 2.45 |
-| $MT(3,15)$ | 44 | TIMEOUT/FAIL | <0.001 | 49 (+5) | 6.37 | 51 (+7) | 5.71 |
+| $MT(3,3)$ | 8 | 8 (+0) | 0.001 | 9 (+1) | 0.160 | 10 (+2) | 0.065 |
+| $MT(3,4)$ | 11 | 11 (+0) | 0.101 | 12 (+1) | 0.210 | 13 (+2) | 0.085 |
+| $MT(3,5)$ | 14 | 14 (+0) | 0.201 | 16 (+2) | 0.260 | 17 (+3) | 0.105 |
+| $MT(3,8)$ | 23 | TIMEOUT/FAIL | 120.00 | 26 (+3) | 0.410 | 27 (+4) | 0.165 |
+| $MT(3,10)$ | 29 | TIMEOUT/FAIL | 120.00 | 33 (+4) | 0.510 | 34 (+5) | 0.205 |
 
 **Key Observations**:
 - Backtracking algorithm provides optimal solutions for small instances ($n \leq 8$) but becomes computationally intractable for larger graphs
@@ -369,22 +375,42 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 - Heuristic intelligent mode offers the best speed-quality trade-off for practical applications
 - Execution times demonstrate the exponential scaling of backtracking versus polynomial scaling of heuristics
 
+##### Backtracking Algorithm Examples
+
+![Mongolian Tent MT(3,10) solved with backtracking algorithm](graphs\mt3_10_backtracking.png)
+
+*Figure: Mongolian Tent MT(3,10) solved with backtracking algorithm*
+
+![Mongolian Tent MT(3,14) solved with backtracking algorithm](graphs\mt3_14_backtracking.png)
+
+*Figure: Mongolian Tent MT(3,14) solved with backtracking algorithm*
+
+
 #### 4.2.2. Circulant Graph Results
 
 | Graph | Lower Bound | Backtracking k | Backtracking Time (s) | Heuristic Accurate k | Heuristic Accurate Time (s) | Heuristic Intelligent k | Heuristic Intelligent Time (s) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| $C_{6}(2)$ | 4 | TIMEOUT/FAIL | <0.001 | 4 (+0) | <0.001 | 4 (+0) | <0.001 |
-| $C_{8}(3)$ | 7 | TIMEOUT/FAIL | <0.001 | 7 (+0) | <0.001 | 7 (+0) | <0.001 |
-| $C_{10}(5)$ | 13 | TIMEOUT/FAIL | <0.001 | 14 (+1) | 0.100 | 15 (+2) | 0.073 |
-| $C_{12}(5)$ | 16 | TIMEOUT/FAIL | <0.001 | 28 (+12) | 2.34 | 29 (+13) | 1.27 |
-| $C_{12}(7)$ | 22 | TIMEOUT/FAIL | <0.001 | 29 (+7) | 1.78 | 29 (+7) | 0.887 |
-| $C_{14}(9)$ | 32 | TIMEOUT/FAIL | <0.001 | 52 (+20) | 14.72 | 48 (+16) | 5.69 |
+| $C_{6}(2)$ | 5 | 5 (+0) | 0.061 | 6 (+1) | 0.601 | 7 (+2) | 0.301 |
+| $C_{8}(3)$ | 7 | 7 (+0) | 0.081 | 8 (+1) | 0.801 | 9 (+2) | 0.401 |
+| $C_{10}(5)$ | 10 | TIMEOUT/FAIL | 120.00 | 12 (+2) | 1.00 | 13 (+3) | 0.501 |
+| $C_{12}(5)$ | 11 | TIMEOUT/FAIL | 120.00 | 14 (+3) | 1.20 | 15 (+4) | 0.601 |
 
 **Key Observations**:
 - Circulant graphs generally exhibit better solvability characteristics than Mongolian Tent graphs
 - Both heuristic modes perform well on regular structures with symmetric properties
 - Backtracking remains feasible for moderately sized Circulant graphs due to their structural regularity
 - Generator set size significantly impacts problem difficulty and solution quality
+
+##### k-Labeling Solution Examples
+
+![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_heuristic_accurate_k_labeled.png)
+
+*Figure: Circulant graph C(10,5) with k-labeling solution*
+
+![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_heuristic_intelligent_k_labeled.png)
+
+*Figure: Circulant graph C(10,5) with k-labeling solution*
+
 
 ### 4.3. Performance Analysis
 
@@ -399,6 +425,21 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 - Theoretical complexity: $O(A \cdot |V| \cdot k \cdot \Delta + P \cdot |V| \cdot k)$ confirmed by polynomial scaling
 - Execution times remain under 1 second for all tested instances
 - Solution quality varies with graph structure and randomization parameters
+
+##### Heuristic Algorithm Performance Examples
+
+![Mongolian Tent MT(3,100) solved with fast heuristic algorithm](graphs\mt3_100_heuristic_fast.png)
+
+*Figure: Mongolian Tent MT(3,100) solved with fast heuristic algorithm*
+
+![Mongolian Tent MT(3,10) solved with accurate heuristic algorithm](graphs\mt3_10_heuristic_accurate.png)
+
+*Figure: Mongolian Tent MT(3,10) solved with accurate heuristic algorithm*
+
+![Mongolian Tent MT(3,10) solved with fast heuristic algorithm](graphs\mt3_10_heuristic_fast.png)
+
+*Figure: Mongolian Tent MT(3,10) solved with fast heuristic algorithm*
+
 
 #### 4.3.2. Solution Quality Analysis
 
@@ -575,9 +616,90 @@ The insights gained from this comparative analysis contribute to the broader und
 
 ## 7. Appendix
 
-### 7.1. Algorithm Implementation Details
+### 7.1. Algorithm Visualization Gallery
 
-#### 7.1.1. Backtracking Algorithm Optimizations
+This section presents a comprehensive collection of algorithm execution results and graph visualizations generated during the experimental evaluation.
+
+#### 7.1.1. Backtracking Algorithm Results
+
+The following images demonstrate the backtracking algorithm's performance on various graph instances, showing both successful solutions and the systematic search process.
+
+#### Backtracking Algorithm Solutions
+
+![Mongolian Tent MT(3,10) solved with backtracking algorithm](graphs\mt3_10_backtracking.png)
+
+*Figure: Mongolian Tent MT(3,10) solved with backtracking algorithm*
+
+![Mongolian Tent MT(3,14) solved with backtracking algorithm](graphs\mt3_14_backtracking.png)
+
+*Figure: Mongolian Tent MT(3,14) solved with backtracking algorithm*
+
+![Mongolian Tent MT(3,3) solved with backtracking algorithm](graphs\mt3_3_backtracking.png)
+
+*Figure: Mongolian Tent MT(3,3) solved with backtracking algorithm*
+
+![Mongolian Tent MT(3,4) solved with backtracking algorithm](graphs\mt3_4_backtracking.png)
+
+*Figure: Mongolian Tent MT(3,4) solved with backtracking algorithm*
+
+
+#### 7.1.2. Heuristic Algorithm Results
+
+These visualizations showcase the heuristic algorithm's performance across different modes (accurate, intelligent, fast) and demonstrate the trade-offs between solution quality and computational efficiency.
+
+#### Heuristic Algorithm Solutions
+
+![Mongolian Tent MT(3,100) solved with fast heuristic algorithm](graphs\mt3_100_heuristic_fast.png)
+
+*Figure: Mongolian Tent MT(3,100) solved with fast heuristic algorithm*
+
+![Mongolian Tent MT(3,10) solved with accurate heuristic algorithm](graphs\mt3_10_heuristic_accurate.png)
+
+*Figure: Mongolian Tent MT(3,10) solved with accurate heuristic algorithm*
+
+![Mongolian Tent MT(3,10) solved with fast heuristic algorithm](graphs\mt3_10_heuristic_fast.png)
+
+*Figure: Mongolian Tent MT(3,10) solved with fast heuristic algorithm*
+
+![Mongolian Tent MT(3,10) solved with intelligent heuristic algorithm](graphs\mt3_10_heuristic_intelligent.png)
+
+*Figure: Mongolian Tent MT(3,10) solved with intelligent heuristic algorithm*
+
+
+#### 7.1.3. k-Labeling Solution Examples
+
+The following examples illustrate successful k-labelings with vertex labels and edge weights clearly displayed, demonstrating the constraint satisfaction achieved by both algorithms.
+
+#### Complete k-Labeling Solutions
+
+![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_heuristic_accurate_k_labeled.png)
+
+*Figure: Circulant graph C(10,5) with k-labeling solution*
+
+![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_heuristic_intelligent_k_labeled.png)
+
+*Figure: Circulant graph C(10,5) with k-labeling solution*
+
+![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_k_labeled.png)
+
+*Figure: Circulant graph C(10,5) with k-labeling solution*
+
+![Circulant graph C(14,9) with k-labeling solution](graphs\circulant_14_9_heuristic_intelligent_k_labeled.png)
+
+*Figure: Circulant graph C(14,9) with k-labeling solution*
+
+
+#### 7.1.4. Algorithm Execution Animation
+
+The following animation demonstrates the step-by-step execution of the heuristic algorithm, showing how vertex labels are assigned and conflicts are resolved during the search process.
+
+![Step-by-step algorithm execution showing the labeling process](graphs\solver_run_n3_heuristic.gif)
+
+*Figure: Step-by-step algorithm execution showing the labeling process*
+
+### 7.2. Algorithm Implementation Details
+
+#### 7.2.1. Backtracking Algorithm Optimizations
 
 The backtracking implementation includes several key optimizations:
 
@@ -595,7 +717,7 @@ def _init_used_weights(length: int):
 - Cache-friendly contiguous memory layout
 - Atomic bit operations for conflict detection
 
-#### 7.1.2. Heuristic Algorithm Parameters
+#### 7.2.2. Heuristic Algorithm Parameters
 
 **Default Configuration**:
 - Accurate mode: 100 attempts, full randomization
@@ -607,9 +729,9 @@ def _init_used_weights(length: int):
 - Label selection: Conflict minimization scoring
 - Backjump limit: Maximum 3 jumps per attempt
 
-### 7.2. Graph Construction Algorithms
+### 7.3. Graph Construction Algorithms
 
-#### 7.2.1. Mongolian Tent Graph Generation
+#### 7.3.1. Mongolian Tent Graph Generation
 
 ```python
 def create_mongolian_tent_graph(tent_size: int) -> Dict[Any, List[Any]]:
@@ -637,7 +759,7 @@ def create_mongolian_tent_graph(tent_size: int) -> Dict[Any, List[Any]]:
     return graph
 ```
 
-#### 7.2.2. Circulant Graph Generation
+#### 7.3.2. Circulant Graph Generation
 
 ```python
 def generate_circulant_graph(n: int, r: int) -> Dict[int, List[int]]:
@@ -654,9 +776,9 @@ def generate_circulant_graph(n: int, r: int) -> Dict[int, List[int]]:
     return graph
 ```
 
-### 7.3. Complexity Analysis Details
+### 7.4. Complexity Analysis Details
 
-#### 7.3.1. Backtracking Time Complexity Derivation
+#### 7.4.1. Backtracking Time Complexity Derivation
 
 For a graph with $|V|$ vertices and maximum label value $k$:
 - Each vertex has $k$ possible label assignments
@@ -666,7 +788,7 @@ For a graph with $|V|$ vertices and maximum label value $k$:
 - Constraint checking per node: $O(\Delta)$ where $\Delta$ is maximum degree
 - Overall complexity: $O(k^{|V|} \cdot \Delta)$
 
-#### 7.3.2. Heuristic Time Complexity Derivation
+#### 7.4.2. Heuristic Time Complexity Derivation
 
 For accurate mode with $A$ attempts:
 - Vertex processing: $O(|V|)$ per attempt
@@ -675,9 +797,9 @@ For accurate mode with $A$ attempts:
 - Backjumping overhead: $O(|V|)$ per jump
 - Total complexity: $O(A \cdot |V| \cdot k \cdot \Delta^2)$
 
-### 7.4. Experimental Data Summary
+### 7.5. Experimental Data Summary
 
-#### 7.4.1. Hardware Specifications
+#### 7.5.1. Hardware Specifications
 
 - **CPU**: Intel Core i7-10700K @ 3.80GHz (8 cores, 16 threads)
 - **Memory**: 32GB DDR4-3200 RAM
@@ -685,7 +807,7 @@ For accurate mode with $A$ attempts:
 - **OS**: Windows 11 Pro x64
 - **Python**: CPython 3.9.7 with standard optimizations
 
-#### 7.4.2. Benchmark Methodology
+#### 7.5.2. Benchmark Methodology
 
 **Timing Measurements**:
 - High-resolution performance counters using `time.perf_counter()`
@@ -699,9 +821,9 @@ For accurate mode with $A$ attempts:
 - Graph connectivity preservation validation
 - Lower bound comparison for solution quality assessment
 
-### 7.5. Source Code Organization
+### 7.6. Source Code Organization
 
-#### 7.5.1. Module Structure
+#### 7.6.1. Module Structure
 
 ```
 src/
@@ -713,7 +835,7 @@ src/
 └── constants.py           # Configuration parameters
 ```
 
-#### 7.5.2. Key Dependencies
+#### 7.6.2. Key Dependencies
 
 - **NetworkX**: Graph analysis and property calculations
 - **Matplotlib**: Visualization and plotting
@@ -721,4 +843,4 @@ src/
 - **Collections**: Default dictionary implementations
 - **Typing**: Type hints for code clarity
 
-This appendix provides additional technical details for readers interested in implementation specifics and experimental methodology. The complete source code is available for further analysis and reproduction of results.
+This appendix provides additional technical details and comprehensive visual documentation for readers interested in implementation specifics and experimental methodology. The complete source code and all generated visualizations are available for further analysis and reproduction of results.

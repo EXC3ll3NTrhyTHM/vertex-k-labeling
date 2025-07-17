@@ -7,6 +7,7 @@ algorithms for the vertex k-labeling problem on Circulant and Mongolian Tent gra
 
 import time
 import json
+import os
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 
@@ -659,6 +660,135 @@ class BenchmarkRunner:
         )
 
 
+class ImageIntegrator:
+    """Handles integration of graph images into the report."""
+    
+    def __init__(self, graphs_folder: str = "graphs"):
+        self.graphs_folder = graphs_folder
+        self.available_images = self._scan_available_images()
+    
+    def _scan_available_images(self) -> Dict[str, List[str]]:
+        """Scan the graphs folder for available images."""
+        images = {
+            'circulant': [],
+            'mongolian_tent': [],
+            'examples': [],
+            'animations': []
+        }
+        
+        if not os.path.exists(self.graphs_folder):
+            return images
+        
+        for filename in os.listdir(self.graphs_folder):
+            if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                filepath = os.path.join(self.graphs_folder, filename)
+                
+                if filename.startswith('circulant_'):
+                    images['circulant'].append(filepath)
+                elif filename.startswith('mt3_'):
+                    images['mongolian_tent'].append(filepath)
+                elif 'example' in filename.lower():
+                    images['examples'].append(filepath)
+                elif filename.endswith('.gif'):
+                    images['animations'].append(filepath)
+        
+        return images
+    
+    def get_graph_structure_images(self) -> Dict[str, str]:
+        """Get representative images for graph structure illustrations."""
+        structure_images = {}
+        
+        # Find good examples for each graph type
+        for img_path in self.available_images['circulant']:
+            if 'circulant_6_2.png' in img_path or 'circulant_8_3.png' in img_path:
+                structure_images['circulant_example'] = img_path
+                break
+        
+        for img_path in self.available_images['mongolian_tent']:
+            if 'mt3_3.png' in img_path or 'mt3_4.png' in img_path:
+                structure_images['mongolian_tent_example'] = img_path
+                break
+        
+        return structure_images
+    
+    def get_algorithm_comparison_images(self) -> Dict[str, List[str]]:
+        """Get images showing algorithm comparisons and results."""
+        comparison_images = {
+            'backtracking_examples': [],
+            'heuristic_examples': [],
+            'labeled_examples': []
+        }
+        
+        # Find backtracking results
+        for img_path in self.available_images['mongolian_tent']:
+            if 'backtracking' in img_path:
+                comparison_images['backtracking_examples'].append(img_path)
+        
+        # Find heuristic results
+        for img_path in self.available_images['mongolian_tent']:
+            if 'heuristic' in img_path and 'backtracking' not in img_path:
+                comparison_images['heuristic_examples'].append(img_path)
+        
+        # Find labeled examples
+        for img_path in self.available_images['circulant']:
+            if 'labeled' in img_path or 'k_labeled' in img_path:
+                comparison_images['labeled_examples'].append(img_path)
+        
+        return comparison_images
+    
+    def format_image_markdown(self, image_path: str, caption: str, alt_text: str = None) -> str:
+        """Format an image reference for markdown."""
+        if alt_text is None:
+            alt_text = caption
+        
+        return f"![{alt_text}]({image_path})\n\n*Figure: {caption}*"
+    
+    def create_image_gallery(self, image_paths: List[str], title: str) -> str:
+        """Create a gallery of related images."""
+        if not image_paths:
+            return ""
+        
+        gallery = f"#### {title}\n\n"
+        
+        for i, img_path in enumerate(image_paths[:4]):  # Limit to 4 images
+            filename = os.path.basename(img_path)
+            # Extract meaningful caption from filename
+            caption = self._generate_caption_from_filename(filename)
+            gallery += self.format_image_markdown(img_path, caption) + "\n\n"
+        
+        return gallery
+    
+    def _generate_caption_from_filename(self, filename: str) -> str:
+        """Generate a descriptive caption from the image filename."""
+        # Remove extension
+        name = os.path.splitext(filename)[0]
+        
+        # Parse different filename patterns
+        if name.startswith('circulant_'):
+            parts = name.split('_')
+            if len(parts) >= 3:
+                n, r = parts[1], parts[2]
+                if 'labeled' in name:
+                    return f"Circulant graph C({n},{r}) with k-labeling solution"
+                else:
+                    return f"Circulant graph C({n},{r}) structure"
+        
+        elif name.startswith('mt3_'):
+            parts = name.split('_')
+            if len(parts) >= 2:
+                n = parts[1]
+                if 'backtracking' in name:
+                    return f"Mongolian Tent MT(3,{n}) solved with backtracking algorithm"
+                elif 'heuristic' in name:
+                    mode = 'accurate' if 'accurate' in name else 'intelligent' if 'intelligent' in name else 'fast' if 'fast' in name else 'standard'
+                    return f"Mongolian Tent MT(3,{n}) solved with {mode} heuristic algorithm"
+                else:
+                    return f"Mongolian Tent MT(3,{n}) graph structure"
+        
+        # Default caption
+        return name.replace('_', ' ').title()
+
+
 class MathematicalNotationFormatter:
     """Handles formatting of mathematical expressions and notation for the report."""
     
@@ -1112,6 +1242,7 @@ class ReportGenerator:
         self.benchmark_runner = BenchmarkRunner()
         self.math_formatter = MathematicalNotationFormatter()
         self.validator = ReportValidator()
+        self.image_integrator = ImageIntegrator()
         
     def format_latex_math(self, expression: str) -> str:
         """Format mathematical expressions with LaTeX notation."""
@@ -1485,7 +1616,11 @@ This report is organized into seven main sections. Following this introduction, 
     
     def generate_background(self) -> str:
         """Generate the background and literature review section."""
-        return """## 2. Background & Literature Review
+        # Get structure images for illustration
+        structure_images = self.image_integrator.get_graph_structure_images()
+        
+        # Build the section with images
+        section = """## 2. Background & Literature Review
 
 ### 2.1. Graph Theory Fundamentals
 
@@ -1507,16 +1642,26 @@ A circulant graph $C_n(S)$ is defined on $n$ vertices $\\{0, 1, \\ldots, n-1\\}$
 
 **Example**: $C_6(\\{1, 2\\})$ has vertices $\\{0, 1, 2, 3, 4, 5\\}$ where vertex 0 connects to vertices 1, 2, 4, and 5.
 
-Circulant graphs exhibit high symmetry and regularity properties, making them important in algebraic graph theory and network topology design.
+Circulant graphs exhibit high symmetry and regularity properties, making them important in algebraic graph theory and network topology design."""
 
+        # Add circulant graph structure image if available
+        if 'circulant_example' in structure_images:
+            section += f"\n\n{self.image_integrator.format_image_markdown(structure_images['circulant_example'], 'Example of a Circulant graph structure showing the regular connectivity pattern')}\n"
+
+        section += """
 #### 2.3.2. Mongolian Tent Graphs
 
 A Mongolian Tent graph $MT(3,n)$ consists of three horizontal paths of length $n$ connected by vertical edges, with an additional apex vertex connected to all vertices in the top row. The structure resembles a tent with three levels and $n$ columns.
 
 **Example**: $MT(3,2)$ has 7 vertices: apex vertex $x$, top row $(1,1), (1,2)$, middle row $(2,1), (2,2)$, and bottom row $(3,1), (3,2)$.
 
-These graphs combine path-like and star-like structural elements, providing an interesting test case for labeling algorithms.
+These graphs combine path-like and star-like structural elements, providing an interesting test case for labeling algorithms."""
 
+        # Add mongolian tent graph structure image if available
+        if 'mongolian_tent_example' in structure_images:
+            section += f"\n\n{self.image_integrator.format_image_markdown(structure_images['mongolian_tent_example'], 'Example of a Mongolian Tent graph structure showing the three-level tent configuration')}\n"
+
+        section += """
 ### 2.4. Algorithmic Strategies
 
 #### 2.4.1. Backtracking
@@ -1530,6 +1675,8 @@ For the k-labeling problem, backtracking assigns labels to vertices one by one, 
 Heuristic algorithms are strategies designed to find good approximate solutions to computationally hard problems in reasonable time, often by making locally optimal choices at each step. While heuristics do not guarantee optimal solutions, they can provide practical solutions for larger problem instances where exact algorithms become intractable.
 
 The greedy heuristic approach for k-labeling prioritizes vertices by degree and uses randomized multi-attempt search to improve solution quality while maintaining polynomial time complexity."""
+
+        return section
     
     def generate_methodology(self) -> str:
         """Generate the methodology section with system design and algorithm descriptions."""
@@ -1652,7 +1799,10 @@ Both algorithms include comprehensive validation:
         # Generate results tables
         mt_table, circulant_table = self.benchmark_runner.generate_results_tables(self.benchmark_results)
         
-        return f"""## 4. Experimental Results & Analysis
+        # Get algorithm comparison images
+        comparison_images = self.image_integrator.get_algorithm_comparison_images()
+        
+        section = f"""## 4. Experimental Results & Analysis
 
 ### 4.1. Experimental Setup
 
@@ -1678,8 +1828,16 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 - Backtracking algorithm provides optimal solutions for small instances ($n \\leq 8$) but becomes computationally intractable for larger graphs
 - Heuristic accurate mode consistently finds feasible solutions with reasonable gaps from theoretical lower bounds
 - Heuristic intelligent mode offers the best speed-quality trade-off for practical applications
-- Execution times demonstrate the exponential scaling of backtracking versus polynomial scaling of heuristics
+- Execution times demonstrate the exponential scaling of backtracking versus polynomial scaling of heuristics"""
 
+        # Add backtracking algorithm examples if available
+        if comparison_images['backtracking_examples']:
+            section += f"\n\n##### Backtracking Algorithm Examples\n\n"
+            for img_path in comparison_images['backtracking_examples'][:2]:  # Show first 2 examples
+                caption = self.image_integrator._generate_caption_from_filename(os.path.basename(img_path))
+                section += f"{self.image_integrator.format_image_markdown(img_path, caption)}\n\n"
+
+        section += f"""
 #### 4.2.2. Circulant Graph Results
 
 {circulant_table}
@@ -1688,22 +1846,38 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 - Circulant graphs generally exhibit better solvability characteristics than Mongolian Tent graphs
 - Both heuristic modes perform well on regular structures with symmetric properties
 - Backtracking remains feasible for moderately sized Circulant graphs due to their structural regularity
-- Generator set size significantly impacts problem difficulty and solution quality
+- Generator set size significantly impacts problem difficulty and solution quality"""
 
+        # Add labeled solution examples if available
+        if comparison_images['labeled_examples']:
+            section += f"\n\n##### k-Labeling Solution Examples\n\n"
+            for img_path in comparison_images['labeled_examples'][:2]:  # Show first 2 examples
+                caption = self.image_integrator._generate_caption_from_filename(os.path.basename(img_path))
+                section += f"{self.image_integrator.format_image_markdown(img_path, caption)}\n\n"
+
+        section += """
 ### 4.3. Performance Analysis
 
 #### 4.3.1. Theoretical Complexity Validation
 
 **Backtracking Algorithm**:
-- Theoretical complexity: $O(k^{{|V|}})$ confirmed by exponential growth in execution times
+- Theoretical complexity: $O(k^{|V|})$ confirmed by exponential growth in execution times
 - Memory usage scales linearly with $k$ value due to bit-array optimization
 - Practical scalability limited to graphs with $|V| \\leq 15$ vertices
 
 **Heuristic Algorithm**:
 - Theoretical complexity: $O(A \\cdot |V| \\cdot k \\cdot \\Delta + P \\cdot |V| \\cdot k)$ confirmed by polynomial scaling
 - Execution times remain under 1 second for all tested instances
-- Solution quality varies with graph structure and randomization parameters
+- Solution quality varies with graph structure and randomization parameters"""
 
+        # Add heuristic algorithm examples if available
+        if comparison_images['heuristic_examples']:
+            section += f"\n\n##### Heuristic Algorithm Performance Examples\n\n"
+            for img_path in comparison_images['heuristic_examples'][:3]:  # Show first 3 examples
+                caption = self.image_integrator._generate_caption_from_filename(os.path.basename(img_path))
+                section += f"{self.image_integrator.format_image_markdown(img_path, caption)}\n\n"
+
+        section += """
 #### 4.3.2. Solution Quality Analysis
 
 **Gap Analysis**:
@@ -1740,6 +1914,8 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 | **Use Case** | Small instances | Balanced requirements | Time-critical applications |
 
 The experimental results demonstrate clear trade-offs between solution optimality, computational efficiency, and scalability. Backtracking provides theoretical guarantees at the cost of exponential complexity, while heuristic approaches offer practical solutions for larger problem instances with acceptable solution quality."""
+
+        return section
     
     def generate_conclusion(self) -> str:
         """Generate the conclusion section with findings and future work suggestions."""
@@ -1882,12 +2058,56 @@ The insights gained from this comparative analysis contribute to the broader und
 [10] Garey, M. R., & Johnson, D. S. (1979). *Computers and Intractability: A Guide to the Theory of NP-Completeness*. W. H. Freeman."""
     
     def generate_appendix(self) -> str:
-        """Generate the appendix section with additional technical details."""
-        return """## 7. Appendix
+        """Generate the appendix section with additional technical details and image galleries."""
+        # Get all available images for comprehensive galleries
+        comparison_images = self.image_integrator.get_algorithm_comparison_images()
+        
+        section = """## 7. Appendix
 
-### 7.1. Algorithm Implementation Details
+### 7.1. Algorithm Visualization Gallery
 
-#### 7.1.1. Backtracking Algorithm Optimizations
+This section presents a comprehensive collection of algorithm execution results and graph visualizations generated during the experimental evaluation.
+
+#### 7.1.1. Backtracking Algorithm Results
+
+The following images demonstrate the backtracking algorithm's performance on various graph instances, showing both successful solutions and the systematic search process."""
+
+        # Add backtracking algorithm gallery
+        if comparison_images['backtracking_examples']:
+            section += f"\n\n{self.image_integrator.create_image_gallery(comparison_images['backtracking_examples'], 'Backtracking Algorithm Solutions')}"
+
+        section += """
+#### 7.1.2. Heuristic Algorithm Results
+
+These visualizations showcase the heuristic algorithm's performance across different modes (accurate, intelligent, fast) and demonstrate the trade-offs between solution quality and computational efficiency."""
+
+        # Add heuristic algorithm gallery
+        if comparison_images['heuristic_examples']:
+            section += f"\n\n{self.image_integrator.create_image_gallery(comparison_images['heuristic_examples'], 'Heuristic Algorithm Solutions')}"
+
+        section += """
+#### 7.1.3. k-Labeling Solution Examples
+
+The following examples illustrate successful k-labelings with vertex labels and edge weights clearly displayed, demonstrating the constraint satisfaction achieved by both algorithms."""
+
+        # Add labeled solution examples
+        if comparison_images['labeled_examples']:
+            section += f"\n\n{self.image_integrator.create_image_gallery(comparison_images['labeled_examples'], 'Complete k-Labeling Solutions')}"
+
+        # Add animation if available
+        if self.image_integrator.available_images['animations']:
+            section += f"""
+#### 7.1.4. Algorithm Execution Animation
+
+The following animation demonstrates the step-by-step execution of the heuristic algorithm, showing how vertex labels are assigned and conflicts are resolved during the search process.
+
+{self.image_integrator.format_image_markdown(self.image_integrator.available_images['animations'][0], 'Step-by-step algorithm execution showing the labeling process')}
+"""
+
+        section += """
+### 7.2. Algorithm Implementation Details
+
+#### 7.2.1. Backtracking Algorithm Optimizations
 
 The backtracking implementation includes several key optimizations:
 
@@ -1905,7 +2125,7 @@ def _init_used_weights(length: int):
 - Cache-friendly contiguous memory layout
 - Atomic bit operations for conflict detection
 
-#### 7.1.2. Heuristic Algorithm Parameters
+#### 7.2.2. Heuristic Algorithm Parameters
 
 **Default Configuration**:
 - Accurate mode: 100 attempts, full randomization
@@ -1917,9 +2137,9 @@ def _init_used_weights(length: int):
 - Label selection: Conflict minimization scoring
 - Backjump limit: Maximum 3 jumps per attempt
 
-### 7.2. Graph Construction Algorithms
+### 7.3. Graph Construction Algorithms
 
-#### 7.2.1. Mongolian Tent Graph Generation
+#### 7.3.1. Mongolian Tent Graph Generation
 
 ```python
 def create_mongolian_tent_graph(tent_size: int) -> Dict[Any, List[Any]]:
@@ -1947,7 +2167,7 @@ def create_mongolian_tent_graph(tent_size: int) -> Dict[Any, List[Any]]:
     return graph
 ```
 
-#### 7.2.2. Circulant Graph Generation
+#### 7.3.2. Circulant Graph Generation
 
 ```python
 def generate_circulant_graph(n: int, r: int) -> Dict[int, List[int]]:
@@ -1964,9 +2184,9 @@ def generate_circulant_graph(n: int, r: int) -> Dict[int, List[int]]:
     return graph
 ```
 
-### 7.3. Complexity Analysis Details
+### 7.4. Complexity Analysis Details
 
-#### 7.3.1. Backtracking Time Complexity Derivation
+#### 7.4.1. Backtracking Time Complexity Derivation
 
 For a graph with $|V|$ vertices and maximum label value $k$:
 - Each vertex has $k$ possible label assignments
@@ -1976,7 +2196,7 @@ For a graph with $|V|$ vertices and maximum label value $k$:
 - Constraint checking per node: $O(\\Delta)$ where $\\Delta$ is maximum degree
 - Overall complexity: $O(k^{|V|} \\cdot \\Delta)$
 
-#### 7.3.2. Heuristic Time Complexity Derivation
+#### 7.4.2. Heuristic Time Complexity Derivation
 
 For accurate mode with $A$ attempts:
 - Vertex processing: $O(|V|)$ per attempt
@@ -1985,9 +2205,9 @@ For accurate mode with $A$ attempts:
 - Backjumping overhead: $O(|V|)$ per jump
 - Total complexity: $O(A \\cdot |V| \\cdot k \\cdot \\Delta^2)$
 
-### 7.4. Experimental Data Summary
+### 7.5. Experimental Data Summary
 
-#### 7.4.1. Hardware Specifications
+#### 7.5.1. Hardware Specifications
 
 - **CPU**: Intel Core i7-10700K @ 3.80GHz (8 cores, 16 threads)
 - **Memory**: 32GB DDR4-3200 RAM
@@ -1995,7 +2215,7 @@ For accurate mode with $A$ attempts:
 - **OS**: Windows 11 Pro x64
 - **Python**: CPython 3.9.7 with standard optimizations
 
-#### 7.4.2. Benchmark Methodology
+#### 7.5.2. Benchmark Methodology
 
 **Timing Measurements**:
 - High-resolution performance counters using `time.perf_counter()`
@@ -2009,9 +2229,9 @@ For accurate mode with $A$ attempts:
 - Graph connectivity preservation validation
 - Lower bound comparison for solution quality assessment
 
-### 7.5. Source Code Organization
+### 7.6. Source Code Organization
 
-#### 7.5.1. Module Structure
+#### 7.6.1. Module Structure
 
 ```
 src/
@@ -2023,7 +2243,7 @@ src/
 └── constants.py           # Configuration parameters
 ```
 
-#### 7.5.2. Key Dependencies
+#### 7.6.2. Key Dependencies
 
 - **NetworkX**: Graph analysis and property calculations
 - **Matplotlib**: Visualization and plotting
@@ -2031,4 +2251,6 @@ src/
 - **Collections**: Default dictionary implementations
 - **Typing**: Type hints for code clarity
 
-This appendix provides additional technical details for readers interested in implementation specifics and experimental methodology. The complete source code is available for further analysis and reproduction of results."""
+This appendix provides additional technical details and comprehensive visual documentation for readers interested in implementation specifics and experimental methodology. The complete source code and all generated visualizations are available for further analysis and reproduction of results."""
+
+        return section
