@@ -356,9 +356,9 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 - **Processor**: Intel Core i7 or equivalent
 
 **Testing Parameters**:
-- **Mongolian Tent Graphs**: $MT(3,n)$ for $n \in \{3, 4, 5, 8, 10, 14, 15\}$
-- **Circulant Graphs**: $C_n(r)$ for $(n,r) \in \{(6,2), (8,3), (10,5), (12,5), (12,7), (14,9)\}$
-- **Timeout Limits**: 120 seconds for branch and bound, 15 seconds for heuristic intelligent, 10 seconds for heuristic fast
+- **Mongolian Tent Graphs**: $MT(3,n)$ for $n \in \{3, 4, 5, 8, 10, 50\}$
+- **Circulant Graphs**: $C_n(r)$ for $(n,r) \in \{(8,3), (10,5), (12,7), (20,15), (50,45)\}$
+- **Timeout Limits**: 120 seconds for backtracking, 15 seconds for heuristic intelligent, 10 seconds for heuristic fast
 - **Heuristic Attempts**: 100(set constant) attempts for intelligent mode, max(2, min(10, n/2)) attempts for fast mode
 
 ### 3.2. Comparative Results
@@ -382,7 +382,7 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 
 ##### k-Labeling Solution Examples
 
-![Mongolian Tent MT(3,5) solved with backtracking algorithm](graphs\mt3_5_branch-and-bound.png)
+![Mongolian Tent MT(3,5) solved with backtracking algorithm](graphs/mt3_5_branch-and-bound.png)
 
 *Figure: Mongolian Tent MT(3,10) solved with backtracking algorithm*
 
@@ -405,53 +405,22 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 **Key Observations**:
 - Cicurlant graphs exhibit worse solvability characteristics than Mongolian Tent graphs
     - This is due to them have a higher degree on each vertex especially as n grows
-- The fast heurisitc mode is the only one that is able to go above n 
-- Circulant graphs generally exhibit better solvability characteristics than Mongolian Tent graphs
-- Both heuristic modes perform well on regular structures with symmetric properties
-- Backtracking remains feasible for moderately sized Circulant graphs due to their structural regularity
-- Generator set size significantly impacts problem difficulty and solution quality
+- The fast heurisitc mode is the only one that is able to go above n = 15
 
 ##### k-Labeling Solution Examples
 
-![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_heuristic_accurate_k_labeled.png)
+![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_k_labeled.png)
 
-*Figure: Circulant graph C(10,5) with k-labeling solution*
+*Figure: Circulant graph C(10,5) with backtracking k-labeling solution*
 
 ![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_heuristic_intelligent_k_labeled.png)
 
-*Figure: Circulant graph C(10,5) with k-labeling solution*
+*Figure: Circulant graph C(10,5) with intelligent heuristic k-labeling solution*
 
 
 ### 4.3. Performance Analysis
 
-#### 4.3.1. Theoretical Complexity Validation
-
-**Backtracking Algorithm**:
-- Theoretical complexity: $O(k_{max} \cdot k^{|V|})$ confirmed by exponential growth in execution times
-- Memory usage scales with recursion depth and the size of the used weights array.
-- Practical scalability limited to graphs with $|V| \leq 15$ vertices
-
-**Heuristic Algorithm**:
-- Theoretical complexity: $O(A \cdot |V| \cdot k \cdot \Delta + P \cdot |V| \cdot k)$ confirmed by polynomial scaling
-- Execution times remain under 1 second for all tested instances
-- Solution quality varies with graph structure and randomization parameters
-
-##### Heuristic Algorithm Performance Examples
-
-![Mongolian Tent MT(3,100) solved with fast heuristic algorithm](graphs\mt3_100_heuristic_fast.png)
-
-*Figure: Mongolian Tent MT(3,100) solved with fast heuristic algorithm*
-
-![Mongolian Tent MT(3,10) solved with accurate heuristic algorithm](graphs\mt3_10_heuristic_accurate.png)
-
-*Figure: Mongolian Tent MT(3,10) solved with accurate heuristic algorithm*
-
-![Mongolian Tent MT(3,10) solved with fast heuristic algorithm](graphs\mt3_10_heuristic_fast.png)
-
-*Figure: Mongolian Tent MT(3,10) solved with fast heuristic algorithm*
-
-
-#### 4.3.2. Solution Quality Analysis
+#### 4.3.1. Solution Quality Analysis
 
 **Gap Analysis**:
 - Average gap from lower bound: Backtracking 0% (optimal), Heuristic Intelligent 15-25%, Heuristic Fast 25-40%
@@ -463,7 +432,7 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 - Heuristic Intelligent: 85-95% success rate across all tested instances
 - Heuristic Fast: 75-85% success rate with significantly faster execution
 
-#### 4.3.3. Algorithm Comparison Summary
+#### 4.3.2. Algorithm Comparison Summary
 
 | Criterion | Backtracking | Heuristic Intelligent | Heuristic Fast |
 |-----------|------------------|---------------------|----------------|
@@ -474,7 +443,7 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 | **Reliability** | High (within limits) | High | Moderate |
 | **Use Case** | Small instances | Balanced requirements | Time-critical applications |
 
-The experimental results demonstrate clear trade-offs between solution optimality, computational efficiency, and scalability. Branch and bound provides theoretical guarantees at the cost of exponential complexity, while heuristic approaches offer practical solutions for larger problem instances with acceptable solution quality.
+The experimental results demonstrate clear trade-offs between solution optimality, computational efficiency, and scalability. Backtracking provides theoretical guarantees at the cost of exponential complexity, while heuristic approaches offer practical solutions for larger problem instances with acceptable solution quality.
 
 ## 5. Conclusions & Future Work
 
@@ -508,13 +477,7 @@ This comparative study of k-labeling algorithms for Circulant and Mongolian Tent
 - Limited theoretical analysis of approximation guarantees
 - Performance variability across different graph topologies
 
-#### 5.1.2. Graph Class Characteristics
-
-**Circulant Graphs**: The regular structure and symmetric properties of Circulant graphs $C_n(S)$ generally facilitate better algorithm performance. Both branch and bound and heuristic approaches demonstrate improved success rates and solution quality on these graphs compared to Mongolian Tent graphs.
-
-**Mongolian Tent Graphs**: The mixed structural elements (path-like and star-like components) in $MT(3,n)$ graphs create more challenging optimization landscapes. Heuristic algorithms show greater performance variation, while branch and bound faces earlier computational limits.
-
-#### 5.1.3. Practical Recommendations
+#### 5.1.2. Practical Recommendations
 
 Based on the experimental results, we recommend:
 
@@ -522,64 +485,18 @@ Based on the experimental results, we recommend:
 - **For medium instances** ($10 < |V| \leq 20$): Use heuristic intelligent mode for balanced performance
 - **For large instances** ($|V| > 20$): Use heuristic fast mode for rapid approximate solutions
 - **For time-critical applications**: Always use heuristic fast mode regardless of instance size
-- **For research applications**: Use branch and bound when theoretical optimality is required
+- **For research applications**: Use backtracking when theoretical optimality is required
 
 ### 5.2. Future Work & Improvements
 
 #### 5.2.1. Algorithmic Enhancements
 
-**Heuristic Algorithm Improvements**:
-- Develop adaptive parameter tuning based on graph characteristics
-- Implement machine learning-guided vertex ordering and label selection
-- Design hybrid approaches combining multiple heuristic strategies
-- Investigate approximation guarantees and theoretical performance bounds
-
 **Backtracking Algorithm Optimizations**:
 - Implement parallel backtracking with work-stealing for multi-core systems
 - Develop intelligent branching heuristics to reduce search space
-- Design incremental constraint propagation for improved pruning
-- Explore enhanced lower bound techniques for tighter pruning
 
-#### 5.2.2. Extended Graph Classes
-
-**Additional Graph Families**:
-- Investigate performance on Cayley graphs and other algebraic structures
-- Extend analysis to random graphs and scale-free networks
-- Study behavior on planar graphs and graphs with bounded treewidth
-- Analyze performance on real-world network topologies
-
-**Parameterized Complexity**:
-- Develop fixed-parameter tractable algorithms for specific graph parameters
-- Investigate kernelization techniques for preprocessing large instances
-- Study approximation algorithms with provable performance guarantees
-
-#### 5.2.3. Implementation and System Improvements
-
-**Performance Optimizations**:
-- Implement GPU-accelerated versions of heuristic algorithms
-- Develop distributed computing approaches for large-scale instances
-- Design memory-efficient data structures for massive graphs
-- Optimize cache performance and memory access patterns
-
-**Software Engineering**:
-- Create comprehensive benchmark suites for algorithm evaluation
-- Develop interactive visualization tools for algorithm behavior analysis
-- Implement automated parameter tuning and algorithm selection
-- Design modular framework for easy algorithm comparison and extension
-
-#### 5.2.4. Theoretical Research Directions
-
-**Complexity Theory**:
-- Investigate the computational complexity of k-labeling for specific graph classes
-- Study the relationship between graph structural properties and labeling difficulty
-- Develop improved lower bound techniques for edge irregularity strength
-- Analyze the approximability of the k-labeling problem
-
-**Graph Theory Applications**:
-- Explore connections to other graph labeling problems and coloring variants
-- Investigate applications in network design and coding theory
-- Study relationships to graph decomposition and factorization problems
-- Develop new graph invariants related to labeling properties
+**Data Structure Improvements**:
+- Convert project to use adjacency matrix as an option to be able to further evaluate methods of k-labeling.
 
 ### 5.3. Final Remarks
 
