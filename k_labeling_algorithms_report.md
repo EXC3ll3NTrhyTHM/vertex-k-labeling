@@ -386,7 +386,7 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 
 *Figure: Mongolian Tent MT(3,10) solved with backtracking algorithm*
 
-![Mongolian Tent MT(3,15) solved with heuristic intelligent algorithm](graphs\mt3_15_heuristic_intelligent.png)
+![Mongolian Tent MT(3,15) solved with heuristic intelligent algorithm](graphs/mt3_15_heuristic_intelligent.png)
 
 *Figure: Mongolian Tent MT(3,14) solved with heuristic intelligent algorithm*
 
@@ -397,7 +397,7 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | $C_{8}(3)$ | 7 | 7 (+0) | 0.02 | 7 (+0) | 0.00 | 7 (+0) | 0.00 |
 | $C_{10}(5)$ | 13 | 13 (+0) | 53.76 | 16 (+3) | 0.01 | 14 (+1) | 0.15 |
-| $C_{12}(7)$ | 10 | TIMEOUT | NA | 33 (+11) | 0.30 | 28 (+6) | 1.74 |
+| $C_{12}(7)$ | 22 | TIMEOUT | NA | 33 (+11) | 0.30 | 28 (+6) | 1.74 |
 | $C_{20}(15)$ | 76 | TIMEOUT | NA | 178 (+76) | 174.92 | TIMEOUT | NA |
 | $C_{50}(45)$ | 563 | TIMEOUT | NA | TBA | +10000s | TIMEOUT | NA |
 
@@ -423,9 +423,7 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 #### 4.3.1. Solution Quality Analysis
 
 **Gap Analysis**:
-- Average gap from lower bound: Backtracking 0% (optimal), Heuristic Intelligent 15-25%, Heuristic Fast 25-40%
-- Heuristic performance correlates with graph regularity and structural symmetry
-- Multi-attempt randomization significantly improves solution quality over single-pass greedy approaches
+- Average gap from lower bound: Backtracking 0% (optimal), Heuristic Intelligent 5-15%, Heuristic Fast 25-40%
 
 **Success Rate Analysis**:
 - Backtracking: 100% success rate within timeout limits, 0% beyond computational threshold
