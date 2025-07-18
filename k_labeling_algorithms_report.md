@@ -182,94 +182,144 @@ ALGORITHM: Dual-Mode Heuristic k-Labeling
 INPUT: adjacency_list, k_upper_bound, algorithm_mode, attempts
 OUTPUT: Valid labeling or None
 
-1. IF algorithm_mode = "fast" THEN
-2.     // Deterministic first-fit pass
-3.     vertices ← sort_by_degree_descending(adjacency_list)
-4.     vertex_labels ← empty dictionary
-5.     used_weights ← boolean array of size (2 * k_upper_bound + 1)
-6.     
-7.     FOR each vertex in vertices DO
-8.         assigned ← False
-9.         FOR label = 1 to k_upper_bound DO
-10.            conflict ← False
-11.            temp_weights ← empty list
-12.            FOR each neighbor of vertex DO
-13.                IF neighbor is labeled THEN
-14.                    weight ← label + vertex_labels[neighbor]
-15.                    IF used_weights[weight] THEN
-16.                        conflict ← True
-17.                        BREAK
-18.                    temp_weights.append(weight)
-19.            IF NOT conflict THEN
-20.                vertex_labels[vertex] ← label
-21.                FOR each weight in temp_weights DO
-22.                    used_weights[weight] ← True
-23.                assigned ← True
-24.                BREAK
-25.        IF NOT assigned THEN
-26.            RETURN None
-27.    
-28.    // Limited randomized passes for improvement
-29.    passes ← max(2, min(10, |V| / 2))
-30.    FOR i = 1 to passes DO
-31.        result ← single_randomized_attempt(adjacency_list, k_upper_bound)
-32.        IF result is not None THEN
-33.            RETURN result
-34.    
-35. ELSE  // intelligent mode
-36.    failure_counts ← initialize_zero_counts(vertices)
-37.    
-38.    FOR attempt = 1 to attempts DO
-39.        vertices ← adaptive_vertex_order(failure_counts, degrees)
-40.        vertex_labels ← empty dictionary
-41.        used_weights ← boolean array of size (2 * k_upper_bound + 1)
-42.        vertex_index ← 0
-43.        backjumps ← 0
-44.        
-45.        WHILE vertex_index < |vertices| DO
-46.            vertex ← vertices[vertex_index]
-47.            best_label ← -1
-48.            min_conflict_score ← infinity
-49.            conflict_set ← empty set
-50.            
-51.            possible_labels ← randomize(1 to k_upper_bound)
-52.            FOR each label in possible_labels DO
-53.                is_valid ← True
-54.                current_conflicts ← empty set
-55.                
-56.                FOR each neighbor of vertex DO
-57.                    IF neighbor is labeled THEN
-58.                        weight ← label + vertex_labels[neighbor]
-59.                        IF used_weights[weight] THEN
-60.                            is_valid ← False
-61.                            current_conflicts.add(neighbor)
-62.                
-63.                IF is_valid THEN
-64.                    conflict_score ← calculate_future_conflicts(label, vertex)
-65.                    IF conflict_score < min_conflict_score THEN
-66.                        min_conflict_score ← conflict_score
-67.                        best_label ← label
-68.                ELSE
-69.                    conflict_set.union(current_conflicts)
-70.            
-71.            IF best_label ≠ -1 THEN
-72.                vertex_labels[vertex] ← best_label
-73.                mark_edge_weights_as_used(vertex, best_label)
-74.                vertex_index ← vertex_index + 1
-75.            ELSE
-76.                IF backjumps < 3 AND conflict_set not empty THEN
-77.                    jump_target ← find_most_recent_conflict(conflict_set)
-78.                    unlabel_vertices_from(jump_target, vertex_index)
-79.                    vertex_index ← jump_target
-80.                    backjumps ← backjumps + 1
-81.                ELSE
-82.                    failure_counts[vertex] ← failure_counts[vertex] + 1
-83.                    BREAK  // Attempt failed
-84.        
-85.        IF all vertices labeled AND is_labeling_valid(vertex_labels) THEN
-86.            RETURN vertex_labels
-87. 
-88. RETURN None  // All attempts failed
+    1 FUNCTION DUAL_HEURISTIC_SOLVER(graph_parameters, algorithm_choice):
+    2     // 1. Initialization
+    3     G = GENERATE_GRAPH(graph_parameters)
+    4     k_lower_bound = CALCULATE_THEORETICAL_LOWER_BOUND(G)
+    5     k_upper_bound = k_lower_bound * CONFIGURABLE_MULTIPLIER
+    6
+    7     // 2. Iterative Search for k
+    8     FOR k FROM k_lower_bound TO k_upper_bound:
+    9         PRINT "Attempting to find a solution for k =", k
+   10
+   11         IF algorithm_choice IS "fast":
+   12             // --- FAST PATH ---
+   13             labeling = EXECUTE_FAST_HEURISTIC(G, k)
+   14             IF labeling IS NOT NULL:
+   15                 PRINT "Fast heuristic found a solution with k =", k
+   16                 RETURN (k, labeling)
+   17
+   18         ELSE IF algorithm_choice IS "intelligent":
+   19             // --- INTELLIGENT (ACCURATE) PATH ---
+   20             labeling = EXECUTE_INTELLIGENT_HEURISTIC(G, k)
+   21             IF labeling IS NOT NULL:
+   22                 PRINT "Intelligent heuristic found a solution with k =", k
+   23                 RETURN (k, labeling)
+   24
+   25     // 3. Return Failure
+   26     PRINT "Failed to find a solution within the k limit."
+   27     RETURN (NULL, NULL)
+
+  ---
+
+  Fast Heuristic Path
+
+  This path prioritizes speed. It first tries a simple, deterministic method and follows up with a limited
+  number of randomized attempts if the first pass fails.
+
+    1 FUNCTION EXECUTE_FAST_HEURISTIC(G, k):
+    2     // --- Part 1: Deterministic First-Fit Pass ---
+    3     // Tries the quickest possible strategy first.
+    4     // Vertices are ordered by degree to handle high-constraint nodes early.
+    5
+    6     vertices = SORT_VERTICES_BY_DEGREE_DESCENDING(G)
+    7     labeling = FIRST_FIT_LABELING_PASS(G, k, vertices)
+    8     IF labeling IS VALID:
+    9         RETURN labeling
+   10
+   11     // --- Part 2: Limited Randomized Passes ---
+   12     // If the deterministic pass fails, this adds a small amount of randomness
+   13     // to escape simple dead-ends without a major performance cost.
+   14
+   15     // Number of passes is kept small, e.g., proportional to graph size.
+   16     num_random_passes = CALCULATE_LIMITED_RANDOM_PASSES(G.size)
+   17
+   18     FOR i FROM 1 TO num_random_passes:
+   19         shuffled_vertices = SHUFFLE(G.vertices)
+   20         labeling = FIRST_FIT_LABELING_PASS(G, k, shuffled_vertices)
+   21         IF labeling IS VALID:
+   22             RETURN labeling
+   23
+   24     RETURN NULL // Fast heuristic failed for this k
+   25
+   26 // Helper for the fast heuristic
+   27 FUNCTION FIRST_FIT_LABELING_PASS(G, k, ordered_vertices):
+   28     labels = {}
+   29     used_weights = new Set()
+   30
+   31     FOR each vertex v in ordered_vertices:
+   32         is_labeled = FALSE
+   33         FOR label FROM 1 TO k:
+   34             IF ASSIGNING(v, label) CREATES_NO_CONFLICTS(labels, used_weights):
+   35                 labels[v] = label
+   36                 UPDATE_USED_WEIGHTS(v, label, labels, used_weights)
+   37                 is_labeled = TRUE
+   38                 BREAK // Move to the next vertex
+   39
+   40         IF NOT is_labeled:
+   41             RETURN NULL // Failed to label vertex v, this pass fails
+   42
+   43     RETURN labels
+
+  ---
+
+  Intelligent (Accurate) Heuristic Path
+
+  This path uses more complex, computationally intensive strategies to find a solution, prioritizing success
+   over speed. It involves multiple attempts, smarter vertex ordering, and a look-ahead mechanism for label
+  selection.
+
+    1 FUNCTION EXECUTE_INTELLIGENT_HEURISTIC(G, k):
+    2     // Makes a significant number of attempts to find a solution for the given k.
+    3     num_attempts = GET_CONFIGURED_ATTEMPT_COUNT() // e.g., 50
+    4
+    5     FOR i FROM 1 TO num_attempts:
+    6         // --- 1. Smart Vertex Ordering ---
+    7         // Prioritizes vertices that have caused failures in past attempts,
+    8         // using degree as a tie-breaker. This focuses effort on "problem" nodes.
+    9         vertices = SORT_VERTICES_BY_FAILURE_COUNT_THEN_DEGREE(G)
+   10
+   11         // --- 2. Labeling with Conflict Minimization and Backjumping ---
+   12         labeling = ADVANCED_LABELING_ATTEMPT(G, k, vertices)
+   13
+   14         IF labeling IS VALID:
+   15             RETURN labeling
+   16
+   17     RETURN NULL // Intelligent heuristic failed for this k
+   18
+   19 // Helper for the intelligent heuristic
+   20 FUNCTION ADVANCED_LABELING_ATTEMPT(G, k, ordered_vertices):
+   21     labels = {}
+   22     used_weights = new Set()
+   23     vertex_index = 0
+   24
+   25     WHILE vertex_index < G.size:
+   26         current_vertex = ordered_vertices[vertex_index]
+   27
+   28         // --- Look-Ahead Label Selection ---
+   29         // Instead of the first fit, find the label that is least likely
+   30         // to cause problems for its neighbors down the line.
+   31         best_label = FIND_LABEL_WITH_MINIMUM_CONFLICT_SCORE(current_vertex, k, labels,
+      used_weights)
+   32
+   33         IF best_label IS NOT NULL:
+   34             labels[current_vertex] = best_label
+   35             UPDATE_USED_WEIGHTS(current_vertex, best_label, labels, used_weights)
+   36             vertex_index++
+   37         ELSE:
+   38             // --- Backjumping ---
+   39             // If no label works, a conflict has occurred. Instead of restarting,
+   40             // jump back to the vertex that caused the conflict.
+   41             IF BACKJUMPS_ARE_ALLOWED and CAN_IDENTIFY_CONFLICT_SOURCE:
+   42                 jump_target_index = IDENTIFY_CONFLICT_SOURCE_VERTEX_INDEX()
+   43                 UNLABEL_VERTICES_FROM(vertex_index, jump_target_index)
+   44                 vertex_index = jump_target_index // Retry from the problem vertex
+   45             ELSE:
+   46                 // This attempt has failed
+   47                 UPDATE_FAILURE_COUNT(current_vertex)
+   48                 RETURN NULL
+   49
+   50     RETURN labels
 ```
 
 #### 2.3.3. Complexity Analysis
