@@ -1,8 +1,8 @@
 <!-- REPORT VALIDATION STATUS: INVALID
-Generated: 2025-07-17 17:40:04
-Errors: 27 | Warnings: 0
-Content: 5418 words, 78 sections, 21.7 pages
-LaTeX expressions: 115 inline, 0 display
+Generated: 2025-07-17 19:32:57
+Errors: 31 | Warnings: 0
+Content: 4876 words, 72 sections, 19.5 pages
+LaTeX expressions: 84 inline, 0 display
 Tables: 21 lines | Code blocks: 6 -->
 
 # A Comparative Analysis of k-Labeling Algorithms for Circulant and Mongolian Tent Graphs
@@ -29,71 +29,33 @@ The key objectives of this project are:
 
 ### 1.3. Scope & Limitations
 
-This study focuses on Circulant graphs $C_n(S)$ for $n$ up to 12 and Mongolian Tent graphs $MT(3,n)$ for $n$ up to 10. The backtracking algorithm provides optimal solutions but is computationally limited to small graph instances due to its exponential time complexity. The heuristic algorithm assumes that randomized multi-attempt greedy search can find good solutions quickly, though it does not guarantee optimality or even feasibility in all cases.
+This study focuses on Circulant graphs $C_n(S)$ for $n$ up to 50 and Mongolian Tent graphs $MT(3,n)$ for $n$ up to 50. The backtracking algorithm provides optimal solutions but is computationally limited to small graph instances due to its exponential time complexity. The heuristic algorithm assumes that randomized multi-attempt greedy search can find good solutions quickly, though it does not guarantee optimality in all cases.
 
 The experimental evaluation is conducted on a standard desktop computing environment, and results may vary on different hardware configurations. The study does not address parallel or distributed implementations of the algorithms.
 
 ### 1.4. Report Structure
 
-This report is organized into seven main sections. Following this introduction, Section 2 provides background on graph theory fundamentals and the specific graph classes under study. Section 3 details the system design and methodology, including algorithm descriptions and pseudocode. Section 4 presents experimental results and comparative analysis. Section 5 concludes with findings and suggestions for future work. Sections 6 and 7 provide references and appendices respectively.
+This report is organized into six main sections. Following this introduction, Section 2 details the algorithmic strategies and system design, including algorithm descriptions and pseudocode. Section 3 presents experimental results and comparative analysis. Section 4 concludes with findings and suggestions for future work. Sections 5 and 6 provide references and appendices respectively.
 
-## 2. Background & Literature Review
+## 2. Algorithmic Strategies & System Design
 
-### 2.1. Graph Theory Fundamentals
+### 2.1. Algorithmic Approaches
 
-A graph $G = (V, E)$ consists of a finite set of vertices $V$ and a set of edges $E \subseteq V \times V$. In this study, we consider undirected graphs where edges are unordered pairs of vertices. The degree of a vertex $v$, denoted $\deg(v)$, is the number of edges incident to $v$. The maximum degree of a graph is $\Delta(G) = \max_{v \in V} \deg(v)$.
+This study employs two distinct algorithmic strategies for solving the vertex k-labeling problem, each representing different trade-offs between solution optimality and computational efficiency.
 
-Graphs are represented using adjacency lists, where each vertex maintains a list of its neighboring vertices. This representation is memory-efficient for sparse graphs and provides $O(\deg(v))$ access time for vertex neighbors, making it well-suited for the graph classes studied in this work.
-
-### 2.2. Vertex k-Labeling
-
-The vertex k-labeling problem, also known as the edge irregularity strength problem, seeks to assign labels from $\{1, 2, \ldots, k\}$ to vertices such that all edge weights are distinct. The edge weight of an edge $\{u, v\}$ is defined as $w(u, v) = f(u) + f(v)$ where $f$ is the labeling function.
-
-This problem has applications in network design where unique edge identifiers are required, and in coding theory for constructing error-correcting codes. The minimum $k$ for which a valid labeling exists is the edge irregularity strength $es(G)$, which provides a measure of the graph's structural complexity.
-
-### 2.3. Graph Classes
-
-#### 2.3.1. Circulant Graphs
-
-A circulant graph $C_n(S)$ is defined on $n$ vertices $\{0, 1, \ldots, n-1\}$ where vertex $i$ is adjacent to vertex $(i + s) \bmod n$ for each $s \in S$. The set $S$ is called the generator set and determines the graph's structure.
-
-**Example**: $C_6(\{1, 2\})$ has vertices $\{0, 1, 2, 3, 4, 5\}$ where vertex 0 connects to vertices 1, 2, 4, and 5.
-
-Circulant graphs exhibit high symmetry and regularity properties, making them important in algebraic graph theory and network topology design.
-
-![Example of a Circulant graph structure showing the regular connectivity pattern](graphs\circulant_6_2.png)
-
-*Figure: Example of a Circulant graph structure showing the regular connectivity pattern*
-
-#### 2.3.2. Mongolian Tent Graphs
-
-A Mongolian Tent graph $MT(3,n)$ consists of three horizontal paths of length $n$ connected by vertical edges, with an additional apex vertex connected to all vertices in the top row. The structure resembles a tent with three levels and $n$ columns.
-
-**Example**: $MT(3,2)$ has 7 vertices: apex vertex $x$, top row $(1,1), (1,2)$, middle row $(2,1), (2,2)$, and bottom row $(3,1), (3,2)$.
-
-These graphs combine path-like and star-like structural elements, providing an interesting test case for labeling algorithms.
-
-![Example of a Mongolian Tent graph structure showing the three-level tent configuration](graphs\mt3_3.png)
-
-*Figure: Example of a Mongolian Tent graph structure showing the three-level tent configuration*
-
-### 2.4. Algorithmic Strategies
-
-#### 2.4.1. Backtracking
+#### 2.1.1. Backtracking
 
 Backtracking is an exhaustive search algorithm that builds solutions incrementally and abandons partial solutions (backtracks) as soon as it determines they cannot lead to a valid complete solution. The algorithm maintains the invariant that all partial assignments satisfy the problem constraints, using constraint propagation to prune the search space early.
 
-For the k-labeling problem, backtracking assigns labels to vertices one by one, checking edge weight uniqueness at each step and backtracking when conflicts arise.
+For the k-labeling problem, backtracking assigns labels to vertices one by one, checking edge weight uniqueness at each step and backtracking when conflicts arise. This approach guarantees finding optimal solutions when they exist but suffers from exponential time complexity.
 
-#### 2.4.2. Heuristics
+#### 2.1.2. Heuristics
 
 Heuristic algorithms are strategies designed to find good approximate solutions to computationally hard problems in reasonable time, often by making locally optimal choices at each step. While heuristics do not guarantee optimal solutions, they can provide practical solutions for larger problem instances where exact algorithms become intractable.
 
-The greedy heuristic approach for k-labeling prioritizes vertices by degree and uses randomized multi-attempt search to improve solution quality while maintaining polynomial time complexity.
+The greedy heuristic approach for k-labeling prioritizes vertices by degree and uses randomized multi-attempt search to improve solution quality while maintaining polynomial time complexity. This study implements a dual-mode heuristic system with both accurate and fast variants to balance solution quality and computational speed.
 
-## 3. System Design & Methodology
-
-### 3.1. Data Structure Design
+### 2.2. Data Structure Design
 
 The system employs adjacency list representation for graph storage, where each vertex maintains a list of its neighboring vertices. This design choice is justified by several factors:
 
@@ -104,7 +66,7 @@ The system employs adjacency list representation for graph storage, where each v
 
 Graphs are represented as Python dictionaries where keys are vertex identifiers and values are lists of adjacent vertices. For Mongolian Tent graphs, vertices are represented as tuples $(row, column)$ with an additional apex vertex. Circulant graphs use integer vertex labels $\{0, 1, \ldots, n-1\}$.
 
-### 3.2. Backtracking Algorithm Design
+### 2.3. Backtracking Algorithm Design
 
 The backtracking algorithm employs a systematic exhaustive search approach that builds 
         vertex labelings incrementally. It processes vertices in a predetermined order, trying each possible 
@@ -114,7 +76,7 @@ The backtracking algorithm employs a systematic exhaustive search approach that 
         the current vertex, the algorithm backtracks by undoing the current assignment and trying the next 
         possible label.
 
-#### 3.2.1. Algorithm Description
+#### 2.3.1. Algorithm Description
 
 The backtracking algorithm implements a systematic exhaustive search with constraint propagation and early pruning. The core strategy involves:
 
@@ -124,7 +86,7 @@ The backtracking algorithm implements a systematic exhaustive search with constr
 4. **Recursive Exploration**: Proceed to the next vertex when constraints are satisfied
 5. **Backtracking**: Undo assignments and try alternative labels when conflicts arise
 
-#### 3.2.2. Pseudocode Implementation
+#### 2.3.2. Pseudocode Implementation
 
 ```
 ALGORITHM: Backtracking k-Labeling
@@ -169,13 +131,13 @@ OUTPUT: Complete valid labeling or None
 36. RETURN None
 ```
 
-#### 3.2.3. Complexity Analysis
+#### 2.3.3. Complexity Analysis
 
 - **Time Complexity**: $O(k^{|V|})$ where $k$ is the maximum label value and $|V|$ is the number of vertices
 - **Space Complexity**: $O(|V| + k)$ for vertex labels and weight tracking
 - **Optimization**: Bit-array implementation provides $O(1)$ conflict detection with reduced memory overhead
 
-### 3.3. Heuristic Algorithm Design
+### 2.4. Heuristic Algorithm Design
 
 The heuristic algorithm employs a dual-mode approach with both accurate and fast variants. 
         The accurate mode uses randomized multi-attempt greedy search with intelligent conflict resolution, 
@@ -186,7 +148,7 @@ The heuristic algorithm employs a dual-mode approach with both accurate and fast
         quality for computational speed. Both modes use conflict-guided vertex ordering and adaptive label 
         selection to improve solution quality while maintaining polynomial time complexity.
 
-#### 3.3.1. Algorithm Description
+#### 2.4.1. Algorithm Description
 
 The heuristic algorithm employs a dual-mode approach optimized for different performance requirements:
 
@@ -202,7 +164,7 @@ The heuristic algorithm employs a dual-mode approach optimized for different per
 - Degree-based vertex prioritization for conflict reduction
 - Early termination when feasible solutions are found
 
-#### 3.3.2. Pseudocode Implementation
+#### 2.4.2. Pseudocode Implementation
 
 ```
 ALGORITHM: Dual-Mode Heuristic k-Labeling
@@ -299,15 +261,15 @@ OUTPUT: Valid labeling or None
 88. RETURN None  // All attempts failed
 ```
 
-#### 3.3.3. Complexity Analysis
+#### 2.4.3. Complexity Analysis
 
 - **Time Complexity**: $O(A \cdot |V| \cdot k \cdot \Delta + P \cdot |V| \cdot k)$ where $A$ is attempts, $P$ is passes, $\Delta$ is maximum degree
 - **Space Complexity**: $O(|V| + k)$ for vertex labels and conflict tracking
 - **Trade-offs**: Fast mode prioritizes speed over solution quality, while accurate mode balances both objectives
 
-### 3.4. Implementation Details
+### 2.5. Implementation Details
 
-#### 3.4.1. Graph Construction
+#### 2.5.1. Graph Construction
 
 Mongolian Tent graphs $MT(3,n)$ are constructed with:
 - Three horizontal paths of length $n$ representing tent levels
@@ -320,7 +282,7 @@ Circulant graphs $C_n(S)$ are constructed with:
 - Each vertex $i$ connected to $(i + s) \bmod n$ for each $s \in S$
 - Regular structure with degree $2|S|$ for symmetric generator sets
 
-#### 3.4.2. Optimization Techniques
+#### 2.5.2. Optimization Techniques
 
 **Backtracking Optimizations**:
 - Bit-array implementation for $O(1)$ weight conflict detection
@@ -333,7 +295,7 @@ Circulant graphs $C_n(S)$ are constructed with:
 - Conflict-guided backjumping to recover from dead ends
 - Multi-mode execution for different performance requirements
 
-#### 3.4.3. Validation and Testing
+#### 2.5.3. Validation and Testing
 
 Both algorithms include comprehensive validation:
 - Edge weight uniqueness verification
@@ -341,9 +303,9 @@ Both algorithms include comprehensive validation:
 - Graph connectivity preservation
 - Solution optimality validation for backtracking results
 
-## 4. Experimental Results & Analysis
+## 3. Experimental Results & Analysis
 
-### 4.1. Experimental Setup
+### 3.1. Experimental Setup
 
 The experimental evaluation was conducted on a standard desktop computing environment with the following specifications:
 - **Operating System**: Windows 10/11 x64
@@ -357,9 +319,9 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 - **Timeout Limits**: 120 seconds for backtracking, 30 seconds for heuristic accurate, 15 seconds for heuristic intelligent
 - **Heuristic Attempts**: 100 attempts for accurate mode, 50 attempts for intelligent mode
 
-### 4.2. Comparative Results
+### 3.2. Comparative Results
 
-#### 4.2.1. Mongolian Tent Graph Results
+#### 3.2.1. Mongolian Tent Graph Results
 
 | Graph | Lower Bound | Backtracking k | Backtracking Time (s) | Heuristic Accurate k | Heuristic Accurate Time (s) | Heuristic Intelligent k | Heuristic Intelligent Time (s) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -594,25 +556,9 @@ The insights gained from this comparative analysis contribute to the broader und
 
 ## 6. References
 
-[1] Chartrand, G., Jacobson, M. S., Lehel, J., Oellermann, O. R., Ruiz, S., & Saba, F. (1988). Irregular networks. *Congressus Numerantium*, 64, 187-192.
+[1] Irregularity strength of circulant graphs using algorithmic approach. Research paper examining computational methods for determining edge irregularity strength in circulant graph families. *Available in reference_docs/Irregularity_Strength_of_Circulant_Graphs_Using_Algorithmic_Approach (1).pdf*
 
-[2] Bača, M., Jendroľ, S., Miller, M., & Ryan, J. (2007). On irregular total labellings. *Discrete Mathematics*, 307(11-12), 1378-1388.
-
-[3] Ivančo, J., & Jendroľ, S. (2006). Total edge irregularity strength of trees. *Discussiones Mathematicae Graph Theory*, 26(3), 449-456.
-
-[4] Ahmad, A., Bača, M., Bashir, Y., & Siddiqui, M. K. (2014). Total edge irregularity strength of strong product of two paths. *Ars Combinatoria*, 106, 449-459.
-
-[5] Nurdin, N., Salman, A. N. M., & Gaos, N. N. (2010). On the total vertex irregularity strength of trees. *Discrete Mathematics*, 310(21), 3043-3048.
-
-[6] West, D. B. (2001). *Introduction to Graph Theory* (2nd ed.). Prentice Hall.
-
-[7] Diestel, R. (2017). *Graph Theory* (5th ed.). Springer Graduate Texts in Mathematics.
-
-[8] Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C. (2009). *Introduction to Algorithms* (3rd ed.). MIT Press.
-
-[9] Russell, S., & Norvig, P. (2020). *Artificial Intelligence: A Modern Approach* (4th ed.). Pearson.
-
-[10] Garey, M. R., & Johnson, D. S. (1979). *Computers and Intractability: A Guide to the Theory of NP-Completeness*. W. H. Freeman.
+[2] Research paper on k-labeling algorithms and graph theory applications. Technical document providing theoretical foundations and algorithmic approaches for vertex labeling problems. *Available in reference_docs/paper1_v4 (1).pdf*
 
 ## 7. Appendix
 

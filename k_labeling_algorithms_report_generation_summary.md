@@ -2,21 +2,30 @@
 
 ## Validation Status: ✗ FAILED
 
-**Generated:** 2025-07-17 17:40:04
+**Generated:** 2025-07-17 19:32:57
 
 ## Content Statistics
 
-- **Total Words:** 5,418
-- **Total Lines:** 839
-- **Estimated Pages:** 21.7
-- **Sections:** 78
-- **LaTeX Expressions:** 115 inline, 0 display
+- **Total Words:** 4,876
+- **Total Lines:** 785
+- **Estimated Pages:** 19.5
+- **Sections:** 72
+- **LaTeX Expressions:** 84 inline, 0 display
 - **Tables:** 21 lines
 - **Code Blocks:** 6
 
 ## Section Completeness
 
-**Completeness Score:** 100.0%
+**Completeness Score:** 68.4%
+
+### Missing Sections
+
+- ### 3.3. Performance Analysis
+- ## 4. Conclusions & Future Work
+- ### 4.1. Summary of Findings
+- ### 4.2. Future Work & Improvements
+- ## 5. References
+- ## 6. Appendix
 
 ### Present Sections
 
@@ -25,82 +34,74 @@
 - ✓ ### 1.1. Problem Statement
 - ✓ ### 1.2. Project Objectives
 - ✓ ### 1.3. Scope & Limitations
-- ✓ ## 2. Background & Literature Review
-- ✓ ### 2.1. Graph Theory Fundamentals
-- ✓ ### 2.2. Vertex k-Labeling
-- ✓ ### 2.3. Graph Classes
-- ✓ ### 2.4. Algorithmic Strategies
-- ✓ ## 3. System Design & Methodology
-- ✓ ### 3.1. Data Structure Design
-- ✓ ### 3.2. Backtracking Algorithm Design
-- ✓ ### 3.3. Heuristic Algorithm Design
-- ✓ ## 4. Experimental Results & Analysis
-- ✓ ### 4.1. Experimental Setup
-- ✓ ### 4.2. Comparative Results
-- ✓ ### 4.3. Performance Analysis
-- ✓ ## 5. Conclusions & Future Work
-- ✓ ### 5.1. Summary of Findings
-- ✓ ### 5.2. Future Work & Improvements
-- ✓ ## 6. References
-- ✓ ## 7. Appendix
+- ✓ ## 2. Algorithmic Strategies & System Design
+- ✓ ### 2.1. Algorithmic Approaches
+- ✓ ### 2.2. Data Structure Design
+- ✓ ### 2.3. Backtracking Algorithm Design
+- ✓ ### 2.4. Heuristic Algorithm Design
+- ✓ ## 3. Experimental Results & Analysis
+- ✓ ### 3.1. Experimental Setup
+- ✓ ### 3.2. Comparative Results
 
 ## Validation Errors
 
-- ✗ Line 132: List item formatting issue
-- ✗ Line 135: List item formatting issue
-- ✗ Line 140: List item formatting issue
-- ✗ Line 148: List item formatting issue
-- ✗ Line 152: List item formatting issue
-- ✗ Line 157: List item formatting issue
-- ✗ Line 160: List item formatting issue
+- ✗ ### 3.3. Performance Analysis
+- ✗ ## 4. Conclusions & Future Work
+- ✗ ### 4.1. Summary of Findings
+- ✗ ### 4.2. Future Work & Improvements
+- ✗ ## 5. References
+- ✗ ## 6. Appendix
+- ✗ Line 94: List item formatting issue
+- ✗ Line 97: List item formatting issue
+- ✗ Line 102: List item formatting issue
+- ✗ Line 110: List item formatting issue
+- ✗ Line 114: List item formatting issue
+- ✗ Line 119: List item formatting issue
+- ✗ Line 122: List item formatting issue
+- ✗ Line 172: List item formatting issue
+- ✗ Line 193: List item formatting issue
+- ✗ Line 200: List item formatting issue
+- ✗ Line 203: List item formatting issue
 - ✗ Line 210: List item formatting issue
-- ✗ Line 231: List item formatting issue
-- ✗ Line 238: List item formatting issue
-- ✗ Line 241: List item formatting issue
-- ✗ Line 248: List item formatting issue
-- ✗ Line 254: List item formatting issue
-- ✗ Line 259: List item formatting issue
-- ✗ Line 266: List item formatting issue
-- ✗ Line 274: List item formatting issue
-- ✗ Line 288: List item formatting issue
-- ✗ Line 291: List item formatting issue
+- ✗ Line 216: List item formatting issue
+- ✗ Line 221: List item formatting issue
+- ✗ Line 228: List item formatting issue
+- ✗ Line 236: List item formatting issue
+- ✗ Line 250: List item formatting issue
+- ✗ Line 253: List item formatting issue
 - ✗ Improper subscript formatting in: $C_n(S)$
 - ✗ Improper subscript formatting in: $C_n(S)$
-- ✗ Improper subscript formatting in: $C_n(S)$
-- ✗ Improper subscript formatting in: $C_6(\{1, 2\})$
 - ✗ Improper subscript formatting in: $C_n(S)$
 - ✗ Improper subscript formatting in: $C_n(r)$
 - ✗ Improper subscript formatting in: $C_n(S)$
 - ✗ Missing required mathematical notation pattern: \$\{.*\}\$
-- ✗ Excessive first person usage (23 instances)
+- ✗ Excessive first person usage (22 instances)
 
 ## Formatting Issues
 
-- ⚠ Line 132: List item formatting issue
-- ⚠ Line 135: List item formatting issue
-- ⚠ Line 140: List item formatting issue
-- ⚠ Line 148: List item formatting issue
-- ⚠ Line 152: List item formatting issue
-- ⚠ Line 157: List item formatting issue
-- ⚠ Line 160: List item formatting issue
+- ⚠ Line 94: List item formatting issue
+- ⚠ Line 97: List item formatting issue
+- ⚠ Line 102: List item formatting issue
+- ⚠ Line 110: List item formatting issue
+- ⚠ Line 114: List item formatting issue
+- ⚠ Line 119: List item formatting issue
+- ⚠ Line 122: List item formatting issue
+- ⚠ Line 172: List item formatting issue
+- ⚠ Line 193: List item formatting issue
+- ⚠ Line 200: List item formatting issue
+- ⚠ Line 203: List item formatting issue
 - ⚠ Line 210: List item formatting issue
-- ⚠ Line 231: List item formatting issue
-- ⚠ Line 238: List item formatting issue
-- ⚠ Line 241: List item formatting issue
-- ⚠ Line 248: List item formatting issue
-- ⚠ Line 254: List item formatting issue
-- ⚠ Line 259: List item formatting issue
-- ⚠ Line 266: List item formatting issue
-- ⚠ Line 274: List item formatting issue
-- ⚠ Line 288: List item formatting issue
-- ⚠ Line 291: List item formatting issue
+- ⚠ Line 216: List item formatting issue
+- ⚠ Line 221: List item formatting issue
+- ⚠ Line 228: List item formatting issue
+- ⚠ Line 236: List item formatting issue
+- ⚠ Line 250: List item formatting issue
+- ⚠ Line 253: List item formatting issue
 
 ## LaTeX Issues
 
 - ⚠ Improper subscript formatting in: $C_n(S)$
 - ⚠ Improper subscript formatting in: $C_n(S)$
-- ⚠ Improper subscript formatting in: $C_n(S)$
-- ⚠ Improper subscript formatting in: $C_6(\{1, 2\})$
 - ⚠ Improper subscript formatting in: $C_n(S)$
 - ⚠ Improper subscript formatting in: $C_n(r)$
 - ⚠ Improper subscript formatting in: $C_n(S)$
@@ -110,7 +111,7 @@
 
 - **6.1** ✗ Markdown structure and formatting
 - **6.2** ✗ LaTeX mathematical notation
-- **6.3** ✓ 7-section academic structure
+- **6.3** ✗ 7-section academic structure
 - **6.4** ✗ Formal academic tone
 
 ## Generation Process
@@ -131,7 +132,7 @@ The report generation process completed the following steps:
 - LaTeX mathematical notation requires proper markdown renderer for display
 - Academic tone validation uses heuristic checks and may require manual review
 - Content statistics are approximate and based on automated analysis
-- **27 validation errors** detected - manual review recommended
+- **31 validation errors** detected - manual review recommended
 
 ## Files Generated
 
