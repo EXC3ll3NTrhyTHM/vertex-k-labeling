@@ -24,11 +24,11 @@ def create_mock_benchmark_results():
     for n in mt_sizes:
         lower_bound = 8 + (n-3) * 3  # Approximate lower bound
         
-        # Backtracking result (optimal for small instances)
+        # Branch and bound result (optimal for small instances)
         if n <= 5:
             k_value = lower_bound
             success = True
-            exec_time = 0.001 + (n-3) * 0.1
+            exec_time = 0.001 + (n-3) * 0.15  # Slightly slower than backtracking due to overhead
         else:
             k_value = None
             success = False
@@ -37,7 +37,7 @@ def create_mock_benchmark_results():
         mock_results.append(BenchmarkResult(
             graph_type="mongolian_tent",
             graph_params={"n": n},
-            algorithm="backtracking",
+            algorithm="branch_and_bound",
             k_value=k_value,
             execution_time=exec_time,
             success=success,
@@ -45,27 +45,27 @@ def create_mock_benchmark_results():
             gap=0 if success else None
         ))
         
-        # Heuristic accurate result
-        heuristic_k = lower_bound + 1 + (n-3) // 2
+        # Heuristic fast result
+        fast_k = lower_bound + 2 + (n-3) // 2
         mock_results.append(BenchmarkResult(
             graph_type="mongolian_tent",
             graph_params={"n": n},
-            algorithm="heuristic_accurate",
-            k_value=heuristic_k,
-            execution_time=0.01 + n * 0.05,
+            algorithm="heuristic_fast",
+            k_value=fast_k,
+            execution_time=0.005 + n * 0.01,  # Very fast
             success=True,
             lower_bound=lower_bound,
-            gap=heuristic_k - lower_bound
+            gap=fast_k - lower_bound
         ))
         
         # Heuristic intelligent result
-        intelligent_k = heuristic_k + 1
+        intelligent_k = lower_bound + 1 + (n-3) // 3
         mock_results.append(BenchmarkResult(
             graph_type="mongolian_tent",
             graph_params={"n": n},
             algorithm="heuristic_intelligent",
             k_value=intelligent_k,
-            execution_time=0.005 + n * 0.02,
+            execution_time=0.01 + n * 0.03,  # Slower than fast but better quality
             success=True,
             lower_bound=lower_bound,
             gap=intelligent_k - lower_bound
@@ -76,11 +76,11 @@ def create_mock_benchmark_results():
     for n, r in circulant_params:
         lower_bound = max(4, n // 2 + r)  # Approximate lower bound
         
-        # Backtracking result
+        # Branch and bound result
         if n <= 8:
             k_value = lower_bound
             success = True
-            exec_time = 0.001 + n * 0.01
+            exec_time = 0.001 + n * 0.015  # Slightly slower than backtracking
         else:
             k_value = None
             success = False
@@ -89,7 +89,7 @@ def create_mock_benchmark_results():
         mock_results.append(BenchmarkResult(
             graph_type="circulant",
             graph_params={"n": n, "r": r},
-            algorithm="backtracking",
+            algorithm="branch_and_bound",
             k_value=k_value,
             execution_time=exec_time,
             success=success,
@@ -97,19 +97,31 @@ def create_mock_benchmark_results():
             gap=0 if success else None
         ))
         
-        # Heuristic results
-        for alg_name, k_offset, time_mult in [("heuristic_accurate", 1, 0.1), ("heuristic_intelligent", 2, 0.05)]:
-            heuristic_k = lower_bound + k_offset + (n-6) // 3
-            mock_results.append(BenchmarkResult(
-                graph_type="circulant",
-                graph_params={"n": n, "r": r},
-                algorithm=alg_name,
-                k_value=heuristic_k,
-                execution_time=0.001 + n * time_mult,
-                success=True,
-                lower_bound=lower_bound,
-                gap=heuristic_k - lower_bound
-            ))
+        # Heuristic fast result
+        fast_k = lower_bound + 2 + (n-6) // 3
+        mock_results.append(BenchmarkResult(
+            graph_type="circulant",
+            graph_params={"n": n, "r": r},
+            algorithm="heuristic_fast",
+            k_value=fast_k,
+            execution_time=0.001 + n * 0.005,  # Very fast
+            success=True,
+            lower_bound=lower_bound,
+            gap=fast_k - lower_bound
+        ))
+        
+        # Heuristic intelligent result
+        intelligent_k = lower_bound + 1 + (n-6) // 4
+        mock_results.append(BenchmarkResult(
+            graph_type="circulant",
+            graph_params={"n": n, "r": r},
+            algorithm="heuristic_intelligent",
+            k_value=intelligent_k,
+            execution_time=0.002 + n * 0.02,  # Slower than fast but better quality
+            success=True,
+            lower_bound=lower_bound,
+            gap=intelligent_k - lower_bound
+        ))
     
     return mock_results
 

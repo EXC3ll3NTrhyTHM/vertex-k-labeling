@@ -664,12 +664,12 @@ def find_feasible_k_labeling(
     graph_description = ""
 
     if graph_type == "mongolian_tent":
-        tent_size = graph_params.get("n")
-        if tent_size is None or tent_size <= 0:
+        n = graph_params.get("n")
+        if n is None or n <= 0:
             return None, None
-        adjacency_list = create_mongolian_tent_graph(tent_size)
-        lower_bound = calculate_lower_bound(tent_size)
-        graph_description = f"Mongolian Tent graph (n={tent_size})"
+        adjacency_list = create_mongolian_tent_graph(n)
+        lower_bound = calculate_lower_bound(n)
+        graph_description = f"Mongolian Tent graph (n={n})"
     elif graph_type == "circulant":
         n = graph_params.get("n")
         r = graph_params.get("r")
@@ -711,7 +711,7 @@ def find_feasible_k_labeling(
                 return k, labeling
 
             # 2) Limited randomized passes correlated to n to improve accuracy without large slowdown.
-            passes = max(2, min(10, tent_size // 2))  # e.g., n=5 ⇒ 2 passes, n=20 ⇒ 10 passes cap.
+            passes = max(2, min(10, n // 2))  # e.g., n=5 ⇒ 2 passes, n=20 ⇒ 10 passes cap.
             for _ in range(passes):
                 callback = on_event if on_event is not None else on_step
                 labeling = greedy_k_labeling(

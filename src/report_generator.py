@@ -1,7 +1,7 @@
 """
 Technical Report Generator for k-Labeling Algorithms
 
-This module generates a comprehensive academic report comparing backtracking and heuristic
+This module generates a comprehensive academic report comparing branch and bound and heuristic
 algorithms for the vertex k-labeling problem on Circulant and Mongolian Tent graphs.
 """
 
@@ -43,78 +43,88 @@ class AlgorithmAnalyzer:
     def __init__(self):
         pass
     
-    def analyze_backtracking_algorithm(self) -> AlgorithmDescription:
-        """Analyze the backtracking algorithm implementation."""
-        strategy = """The backtracking algorithm employs a systematic exhaustive search approach that builds 
-        vertex labelings incrementally. It processes vertices in a predetermined order, trying each possible 
-        label value from 1 to k for the current vertex. For each label assignment, it checks whether the 
-        resulting edge weights conflict with previously assigned weights. If no conflicts arise, the algorithm 
-        recursively proceeds to the next vertex. When conflicts are detected or no valid label exists for 
-        the current vertex, the algorithm backtracks by undoing the current assignment and trying the next 
-        possible label."""
+    def analyze_branch_and_bound_algorithm(self) -> AlgorithmDescription:
+        """Analyze the branch and bound algorithm implementation."""
+        strategy = """The branch and bound algorithm combines systematic search with intelligent pruning 
+        using lower bound estimation. It builds vertex labelings incrementally while maintaining a priority 
+        queue of partial solutions ordered by their lower bound estimates. For each partial solution, the 
+        algorithm calculates a lower bound on the minimum k-value needed to complete the labeling. If this 
+        lower bound exceeds the current best known solution, the branch is pruned. The algorithm uses 
+        sophisticated bounding techniques including degree-based bounds, conflict analysis, and remaining 
+        vertex constraints to achieve effective pruning while guaranteeing optimal solutions."""
         
         pseudocode = """```
-ALGORITHM: Backtracking k-Labeling
-INPUT: adjacency_list, max_k_value, vertex_labels, unlabeled_vertices, used_weights
-OUTPUT: Complete valid labeling or None
+ALGORITHM: Branch and Bound k-Labeling
+INPUT: adjacency_list, initial_k_bound
+OUTPUT: Optimal labeling and minimum k-value
 
-1. IF unlabeled_vertices is empty THEN
-2.     IF is_labeling_valid(vertex_labels) THEN
-3.         RETURN vertex_labels
-4.     ELSE
-5.         RETURN None
+1. priority_queue ← empty priority queue (ordered by lower bound)
+2. best_solution ← None
+3. best_k ← infinity
+4. initial_state ← (empty_labeling, unlabeled_vertices, used_weights, 0)
+5. priority_queue.push(initial_state, calculate_lower_bound(initial_state))
 6. 
-7. vertex_to_label ← first vertex in unlabeled_vertices
-8. remaining_vertices ← unlabeled_vertices without first vertex
-9. 
-10. FOR label = 1 to max_k_value DO
-11.     vertex_labels[vertex_to_label] ← label
-12.     new_weights ← empty list
-13.     conflict ← False
-14.     
-15.     FOR each neighbor of vertex_to_label DO
-16.         IF neighbor is already labeled THEN
-17.             weight ← label + vertex_labels[neighbor]
-18.             IF used_weights[weight] is True THEN
-19.                 conflict ← True
-20.                 BREAK
-21.             new_weights.append(weight)
-22.     
-23.     IF NOT conflict THEN
-24.         FOR each weight in new_weights DO
-25.             used_weights[weight] ← True
-26.         
-27.         result ← BACKTRACK(adjacency_list, max_k_value, vertex_labels, 
-28.                           remaining_vertices, used_weights)
-29.         IF result is not None THEN
-30.             RETURN result
-31.         
-32.         FOR each weight in new_weights DO
-33.             used_weights[weight] ← False
-34. 
-35. DELETE vertex_labels[vertex_to_label]
-36. RETURN None
+7. WHILE priority_queue is not empty DO
+8.     current_state, lower_bound ← priority_queue.pop()
+9.     vertex_labels, remaining_vertices, used_weights, current_k ← current_state
+10.    
+11.    IF lower_bound ≥ best_k THEN
+12.        CONTINUE  // Prune this branch
+13.    
+14.    IF remaining_vertices is empty THEN
+15.        IF current_k < best_k THEN
+16.            best_k ← current_k
+17.            best_solution ← vertex_labels
+18.        CONTINUE
+19.    
+20.    vertex ← select_next_vertex(remaining_vertices, vertex_labels)
+21.    new_remaining ← remaining_vertices without vertex
+22.    
+23.    FOR label = 1 to min(best_k - 1, calculate_max_feasible_label(vertex)) DO
+24.        new_labels ← vertex_labels ∪ {vertex: label}
+25.        new_weights ← used_weights
+26.        conflict ← False
+27.        max_weight ← current_k
+28.        
+29.        FOR each neighbor of vertex DO
+30.            IF neighbor in vertex_labels THEN
+31.                weight ← label + vertex_labels[neighbor]
+32.                IF weight in used_weights THEN
+33.                    conflict ← True
+34.                    BREAK
+35.                new_weights ← new_weights ∪ {weight}
+36.                max_weight ← max(max_weight, weight)
+37.        
+38.        IF NOT conflict THEN
+39.            new_state ← (new_labels, new_remaining, new_weights, max_weight)
+40.            bound ← calculate_lower_bound(new_state)
+41.            IF bound < best_k THEN
+42.                priority_queue.push(new_state, bound)
+43. 
+44. RETURN (best_k, best_solution)
 ```"""
         
-        time_complexity = "$O(k^{|V|})$"
-        space_complexity = "$O(|V| + k)$"
+        time_complexity = "$O(k^{|V|} \\cdot \\log(k^{|V|}))$"
+        space_complexity = "$O(k^{|V|} + |V| + k)$"
         
         advantages = [
-            "Guarantees optimal solution when one exists",
-            "Systematic exploration ensures completeness",
-            "Early pruning through constraint checking reduces search space",
-            "Bit-array optimization provides efficient conflict detection"
+            "Guarantees optimal solution with intelligent pruning",
+            "Lower bound estimation reduces search space significantly",
+            "Priority queue ensures exploration of most promising branches first",
+            "Sophisticated bounding techniques improve efficiency over pure backtracking",
+            "Maintains optimality guarantee while achieving better practical performance"
         ]
         
         limitations = [
-            "Exponential time complexity limits scalability",
-            "Memory usage grows with maximum k value",
-            "Performance degrades rapidly with graph size",
-            "No approximation capability for large instances"
+            "Still exponential worst-case time complexity",
+            "Memory usage can be high due to priority queue storage",
+            "Lower bound calculation adds computational overhead",
+            "Performance depends heavily on quality of bounding functions",
+            "May still be impractical for very large graph instances"
         ]
         
         return AlgorithmDescription(
-            name="Backtracking k-Labeling",
+            name="Branch and Bound k-Labeling",
             strategy=strategy,
             pseudocode=pseudocode,
             time_complexity=time_complexity,
@@ -282,30 +292,30 @@ class BenchmarkRunner:
             # Calculate theoretical lower bound
             lower_bound = calculate_lower_bound(n)
             
-            # Test backtracking algorithm
-            print(f"  Running backtracking algorithm...")
-            backtrack_result = self._run_single_benchmark_with_timeout(
+            # Test branch and bound algorithm
+            print(f"  Running branch and bound algorithm...")
+            branch_bound_result = self._run_single_benchmark_with_timeout(
                 algorithm_func=find_optimal_k_labeling,
                 graph_type="mongolian_tent",
                 graph_params={"n": n},
-                algorithm_name="backtracking",
+                algorithm_name="branch_and_bound",
                 lower_bound=lower_bound,
-                timeout=120.0  # 2 minute timeout for backtracking
+                timeout=120.0  # 2 minute timeout for branch and bound
             )
-            results.append(backtrack_result)
+            results.append(branch_bound_result)
             
-            # Test heuristic algorithm (accurate mode)
-            print(f"  Running heuristic algorithm (accurate mode)...")
-            heuristic_result = self._run_single_benchmark_with_timeout(
+            # Test heuristic algorithm (fast mode)
+            print(f"  Running heuristic algorithm (fast mode)...")
+            heuristic_fast_result = self._run_single_benchmark_with_timeout(
                 algorithm_func=find_feasible_k_labeling,
                 graph_type="mongolian_tent", 
                 graph_params={"n": n},
-                algorithm_name="heuristic_accurate",
+                algorithm_name="heuristic_fast",
                 lower_bound=lower_bound,
-                timeout=30.0,  # 30 second timeout for heuristic
-                algorithm_kwargs={"algorithm": "accurate", "num_attempts": 100}
+                timeout=15.0,  # 15 second timeout for fast heuristic
+                algorithm_kwargs={"algorithm": "fast", "num_attempts": 10}
             )
-            results.append(heuristic_result)
+            results.append(heuristic_fast_result)
             
             # Test heuristic algorithm (intelligent mode) 
             print(f"  Running heuristic algorithm (intelligent mode)...")
@@ -340,30 +350,30 @@ class BenchmarkRunner:
             # Calculate theoretical lower bound
             lower_bound = calculate_circulant_lower_bound(n, r)
             
-            # Test backtracking algorithm
-            print(f"  Running backtracking algorithm...")
-            backtrack_result = self._run_single_benchmark_with_timeout(
+            # Test branch and bound algorithm
+            print(f"  Running branch and bound algorithm...")
+            branch_bound_result = self._run_single_benchmark_with_timeout(
                 algorithm_func=find_optimal_k_labeling,
                 graph_type="circulant",
                 graph_params={"n": n, "r": r},
-                algorithm_name="backtracking",
+                algorithm_name="branch_and_bound",
                 lower_bound=lower_bound,
-                timeout=120.0  # 2 minute timeout for backtracking
+                timeout=120.0  # 2 minute timeout for branch and bound
             )
-            results.append(backtrack_result)
+            results.append(branch_bound_result)
             
-            # Test heuristic algorithm (accurate mode)
-            print(f"  Running heuristic algorithm (accurate mode)...")
-            heuristic_result = self._run_single_benchmark_with_timeout(
+            # Test heuristic algorithm (fast mode)
+            print(f"  Running heuristic algorithm (fast mode)...")
+            heuristic_fast_result = self._run_single_benchmark_with_timeout(
                 algorithm_func=find_feasible_k_labeling,
                 graph_type="circulant",
                 graph_params={"n": n, "r": r},
-                algorithm_name="heuristic_accurate",
+                algorithm_name="heuristic_fast",
                 lower_bound=lower_bound,
-                timeout=30.0,  # 30 second timeout for heuristic
-                algorithm_kwargs={"algorithm": "accurate", "num_attempts": 100}
+                timeout=15.0,  # 15 second timeout for fast heuristic
+                algorithm_kwargs={"algorithm": "fast", "num_attempts": 10}
             )
-            results.append(heuristic_result)
+            results.append(heuristic_fast_result)
             
             # Test heuristic algorithm (intelligent mode)
             print(f"  Running heuristic algorithm (intelligent mode)...")
@@ -410,8 +420,8 @@ class BenchmarkRunner:
             grouped_results[n][result.algorithm] = result
         
         # Create table headers
-        headers = ["Graph", "Lower Bound", "Backtracking k", "Backtracking Time (s)", 
-                  "Heuristic Accurate k", "Heuristic Accurate Time (s)",
+        headers = ["Graph", "Lower Bound", "Branch & Bound k", "Branch & Bound Time (s)", 
+                  "Heuristic Fast k", "Heuristic Fast Time (s)",
                   "Heuristic Intelligent k", "Heuristic Intelligent Time (s)"]
         
         rows = []
@@ -426,10 +436,10 @@ class BenchmarkRunner:
             row = [
                 math_formatter.format_graph_notation("mongolian_tent", m=3, n=n),
                 str(lower_bound),
-                self._format_result_cell(row_data.get("backtracking")),
-                self._format_time_cell(row_data.get("backtracking")),
-                self._format_result_cell(row_data.get("heuristic_accurate")),
-                self._format_time_cell(row_data.get("heuristic_accurate")),
+                self._format_result_cell(row_data.get("branch_and_bound")),
+                self._format_time_cell(row_data.get("branch_and_bound")),
+                self._format_result_cell(row_data.get("heuristic_fast")),
+                self._format_time_cell(row_data.get("heuristic_fast")),
                 self._format_result_cell(row_data.get("heuristic_intelligent")),
                 self._format_time_cell(row_data.get("heuristic_intelligent"))
             ]
@@ -453,8 +463,8 @@ class BenchmarkRunner:
             grouped_results[key][result.algorithm] = result
         
         # Create table headers
-        headers = ["Graph", "Lower Bound", "Backtracking k", "Backtracking Time (s)", 
-                  "Heuristic Accurate k", "Heuristic Accurate Time (s)",
+        headers = ["Graph", "Lower Bound", "Branch & Bound k", "Branch & Bound Time (s)", 
+                  "Heuristic Fast k", "Heuristic Fast Time (s)",
                   "Heuristic Intelligent k", "Heuristic Intelligent Time (s)"]
         
         rows = []
@@ -469,10 +479,10 @@ class BenchmarkRunner:
             row = [
                 math_formatter.format_graph_notation("circulant", n=n, r=r),
                 str(lower_bound),
-                self._format_result_cell(row_data.get("backtracking")),
-                self._format_time_cell(row_data.get("backtracking")),
-                self._format_result_cell(row_data.get("heuristic_accurate")),
-                self._format_time_cell(row_data.get("heuristic_accurate")),
+                self._format_result_cell(row_data.get("branch_and_bound")),
+                self._format_time_cell(row_data.get("branch_and_bound")),
+                self._format_result_cell(row_data.get("heuristic_fast")),
+                self._format_time_cell(row_data.get("heuristic_fast")),
                 self._format_result_cell(row_data.get("heuristic_intelligent")),
                 self._format_time_cell(row_data.get("heuristic_intelligent"))
             ]
@@ -1675,20 +1685,20 @@ The greedy heuristic approach for k-labeling prioritizes vertices by degree and 
     def generate_methodology(self) -> str:
         """Generate the methodology section with system design and algorithm descriptions."""
         # Get algorithm descriptions
-        backtrack_desc = self.analyzer.analyze_backtracking_algorithm()
+        branch_bound_desc = self.analyzer.analyze_branch_and_bound_algorithm()
         heuristic_desc = self.analyzer.analyze_heuristic_algorithm()
         
         return f"""## 2. Algorithmic Strategies & System Design
 
 ### 2.1. Algorithmic Approaches
 
-This study employs two distinct algorithmic strategies for solving the vertex k-labeling problem, each representing different trade-offs between solution optimality and computational efficiency.
+This study employs three distinct algorithmic strategies for solving the vertex k-labeling problem, each representing different trade-offs between solution optimality and computational efficiency.
 
-#### 2.1.1. Backtracking
+#### 2.1.1. Branch and Bound
 
-Backtracking is an exhaustive search algorithm that builds solutions incrementally and abandons partial solutions (backtracks) as soon as it determines they cannot lead to a valid complete solution. The algorithm maintains the invariant that all partial assignments satisfy the problem constraints, using constraint propagation to prune the search space early.
+Branch and bound is an intelligent exhaustive search algorithm that combines systematic exploration with sophisticated pruning techniques. It maintains a priority queue of partial solutions ordered by lower bound estimates, allowing it to focus on the most promising branches first. The algorithm calculates lower bounds on the minimum k-value needed to complete each partial labeling, pruning branches that cannot improve upon the current best solution.
 
-For the k-labeling problem, backtracking assigns labels to vertices one by one, checking edge weight uniqueness at each step and backtracking when conflicts arise. This approach guarantees finding optimal solutions when they exist but suffers from exponential time complexity.
+For the k-labeling problem, branch and bound builds vertex labelings incrementally while using degree-based bounds, conflict analysis, and remaining vertex constraints to achieve effective pruning. This approach guarantees finding optimal solutions while achieving better practical performance than pure backtracking through intelligent search space reduction.
 
 #### 2.1.2. Heuristics
 
@@ -1707,29 +1717,29 @@ The system employs adjacency list representation for graph storage, where each v
 
 Graphs are represented as Python dictionaries where keys are vertex identifiers and values are lists of adjacent vertices. For Mongolian Tent graphs, vertices are represented as tuples $(row, column)$ with an additional apex vertex. Circulant graphs use integer vertex labels $\\{{0, 1, \\ldots, n-1\\}}$.
 
-### 2.3. Backtracking Algorithm Design
+### 2.3. Branch and Bound Algorithm Design
 
-{backtrack_desc.strategy}
+{branch_bound_desc.strategy}
 
 #### 2.3.1. Algorithm Description
 
-The backtracking algorithm implements a systematic exhaustive search with constraint propagation and early pruning. The core strategy involves:
+The branch and bound algorithm implements a systematic search with intelligent pruning using lower bound estimation. The core strategy involves:
 
-1. **Vertex Ordering**: Process vertices in a predetermined order to maintain consistency
-2. **Label Assignment**: Try each possible label value from 1 to k for the current vertex
-3. **Constraint Checking**: Verify that new edge weights do not conflict with existing assignments
-4. **Recursive Exploration**: Proceed to the next vertex when constraints are satisfied
-5. **Backtracking**: Undo assignments and try alternative labels when conflicts arise
+1. **Priority Queue Management**: Maintain partial solutions ordered by lower bound estimates
+2. **Lower Bound Calculation**: Estimate minimum k-value needed to complete each partial labeling
+3. **Branch Pruning**: Eliminate branches that cannot improve upon the current best solution
+4. **Optimal Solution Tracking**: Update best known solution when complete labelings are found
+5. **Intelligent Exploration**: Focus on most promising branches first through priority ordering
 
 #### 2.3.2. Pseudocode Implementation
 
-{backtrack_desc.pseudocode}
+{branch_bound_desc.pseudocode}
 
 #### 2.3.3. Complexity Analysis
 
-- **Time Complexity**: {backtrack_desc.time_complexity} where $k$ is the maximum label value and $|V|$ is the number of vertices
-- **Space Complexity**: {backtrack_desc.space_complexity} for vertex labels and weight tracking
-- **Optimization**: Bit-array implementation provides $O(1)$ conflict detection with reduced memory overhead
+- **Time Complexity**: {branch_bound_desc.time_complexity} where $k$ is the maximum label value and $|V|$ is the number of vertices
+- **Space Complexity**: {branch_bound_desc.space_complexity} for priority queue, vertex labels and weight tracking
+- **Optimization**: Lower bound estimation provides intelligent pruning with priority queue management
 
 ### 2.4. Heuristic Algorithm Design
 

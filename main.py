@@ -6,7 +6,7 @@ import time
 import networkx as nx
 import argparse
 from src.edge_irregular_solver import k_labeling_backtracking
-from src.constants import DEFAULT_TENT_SIZE, DEFAULT_SOLVER_TYPE, DEFAULT_CIRCULANT_OFFSET
+from src.constants import DEFAULT_TENT_SIZE, DEFAULT_SOLVER_TYPE, DEFAULT_CIRCULANT_OFFSET, DEFAULT_GRAPH_TYPE, DEFAULT_HEURISTIC_MODE
 from src.graph_generator import generate_circulant_graph
 
 def main():
@@ -15,11 +15,11 @@ def main():
     """
     parser = argparse.ArgumentParser(description="Find and visualize k-labeling for Mongolian Tent graphs.")
     parser.add_argument("--n", type=int, default=DEFAULT_TENT_SIZE, help=f"Value of n (default: {DEFAULT_TENT_SIZE})")
-    parser.add_argument("--graph-type", type=str, default="mongolian_tent", choices=["mongolian_tent", "circulant"], help="Graph type: 'mongolian_tent' or 'circulant' (r = max(n - DEFAULT_CIRCULANT_OFFSET, 2))")
+    parser.add_argument("--graph-type", type=str, default=DEFAULT_GRAPH_TYPE, choices=["mongolian_tent", "circulant"], help="Graph type: 'mongolian_tent' or 'circulant' (r = max(n - DEFAULT_CIRCULANT_OFFSET, 2))")
     parser.add_argument("--solver", type=str, default=DEFAULT_SOLVER_TYPE, choices=["heuristic", "backtracking", "edge-irregular", "branch-and-bound"], help=f"Solver to use: 'heuristic', 'backtracking', 'edge-irregular', or 'branch-and-bound' (default: {DEFAULT_SOLVER_TYPE})")
     parser.add_argument("--k-limit", type=int, default=None, help="Upper bound on k for edge-irregular solver")
     parser.add_argument("--progress", action="store_true", help="Print progress of k-limit search for edge-irregular solver")
-    parser.add_argument("--heuristic_mode", type=str, default="accurate", choices=["accurate", "fast", "intelligent"], help="Heuristic mode: 'accurate' uses randomized multi-attempt search (slower, better chance of optimal k), 'fast' uses a single-pass greedy (faster, possibly higher k), 'intelligent' uses a degree-biased and conflict-minimizing approach. Ignored for backtracking solver.")
+    parser.add_argument("--heuristic_mode", type=str, default=DEFAULT_HEURISTIC_MODE, choices=["accurate", "fast", "intelligent"], help="Heuristic mode: 'accurate' uses randomized multi-attempt search (slower, better chance of optimal k), 'fast' uses a single-pass greedy (faster, possibly higher k), 'intelligent' uses a degree-biased and conflict-minimizing approach. Ignored for backtracking solver.")
     parser.add_argument(
         "--animate",
         type=str,

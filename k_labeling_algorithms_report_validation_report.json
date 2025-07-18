@@ -1,6 +1,7 @@
 {
   "is_valid": false,
   "errors": [
+    "### 2.3. Backtracking Algorithm Design",
     "### 3.3. Performance Analysis",
     "## 4. Conclusions & Future Work",
     "### 4.1. Summary of Findings",
@@ -8,34 +9,36 @@
     "## 5. References",
     "## 6. Appendix",
     "Line 94: List item formatting issue",
-    "Line 97: List item formatting issue",
-    "Line 102: List item formatting issue",
+    "Line 98: List item formatting issue",
+    "Line 101: List item formatting issue",
+    "Line 107: List item formatting issue",
     "Line 110: List item formatting issue",
-    "Line 114: List item formatting issue",
-    "Line 119: List item formatting issue",
-    "Line 122: List item formatting issue",
-    "Line 172: List item formatting issue",
-    "Line 193: List item formatting issue",
-    "Line 200: List item formatting issue",
-    "Line 203: List item formatting issue",
-    "Line 210: List item formatting issue",
-    "Line 216: List item formatting issue",
-    "Line 221: List item formatting issue",
-    "Line 228: List item formatting issue",
+    "Line 116: List item formatting issue",
+    "Line 125: List item formatting issue",
+    "Line 131: List item formatting issue",
+    "Line 180: List item formatting issue",
+    "Line 201: List item formatting issue",
+    "Line 208: List item formatting issue",
+    "Line 211: List item formatting issue",
+    "Line 218: List item formatting issue",
+    "Line 224: List item formatting issue",
+    "Line 229: List item formatting issue",
     "Line 236: List item formatting issue",
-    "Line 250: List item formatting issue",
-    "Line 253: List item formatting issue",
+    "Line 244: List item formatting issue",
+    "Line 258: List item formatting issue",
+    "Line 261: List item formatting issue",
     "Improper subscript formatting in: $C_n(S)$",
     "Improper subscript formatting in: $C_n(S)$",
     "Improper subscript formatting in: $C_n(S)$",
     "Improper subscript formatting in: $C_n(r)$",
     "Improper subscript formatting in: $C_n(S)$",
     "Missing required mathematical notation pattern: \\$\\{.*\\}\\$",
-    "Excessive first person usage (22 instances)"
+    "Excessive first person usage (21 instances)"
   ],
   "warnings": [],
   "section_completeness": {
     "missing_sections": [
+      "### 2.3. Backtracking Algorithm Design",
       "### 3.3. Performance Analysis",
       "## 4. Conclusions & Future Work",
       "### 4.1. Summary of Findings",
@@ -52,7 +55,6 @@
       "## 2. Algorithmic Strategies & System Design",
       "### 2.1. Algorithmic Approaches",
       "### 2.2. Data Structure Design",
-      "### 2.3. Backtracking Algorithm Design",
       "### 2.4. Heuristic Algorithm Design",
       "## 3. Experimental Results & Analysis",
       "### 3.1. Experimental Setup",
@@ -64,27 +66,28 @@
       "Section '## 2. Algorithmic Strategies & System Design' appears too short",
       "Section '## 3. Experimental Results & Analysis' appears too short"
     ],
-    "completeness_score": 0.6842105263157895
+    "completeness_score": 0.631578947368421
   },
   "formatting_issues": [
     "Line 94: List item formatting issue",
-    "Line 97: List item formatting issue",
-    "Line 102: List item formatting issue",
+    "Line 98: List item formatting issue",
+    "Line 101: List item formatting issue",
+    "Line 107: List item formatting issue",
     "Line 110: List item formatting issue",
-    "Line 114: List item formatting issue",
-    "Line 119: List item formatting issue",
-    "Line 122: List item formatting issue",
-    "Line 172: List item formatting issue",
-    "Line 193: List item formatting issue",
-    "Line 200: List item formatting issue",
-    "Line 203: List item formatting issue",
-    "Line 210: List item formatting issue",
-    "Line 216: List item formatting issue",
-    "Line 221: List item formatting issue",
-    "Line 228: List item formatting issue",
+    "Line 116: List item formatting issue",
+    "Line 125: List item formatting issue",
+    "Line 131: List item formatting issue",
+    "Line 180: List item formatting issue",
+    "Line 201: List item formatting issue",
+    "Line 208: List item formatting issue",
+    "Line 211: List item formatting issue",
+    "Line 218: List item formatting issue",
+    "Line 224: List item formatting issue",
+    "Line 229: List item formatting issue",
     "Line 236: List item formatting issue",
-    "Line 250: List item formatting issue",
-    "Line 253: List item formatting issue"
+    "Line 244: List item formatting issue",
+    "Line 258: List item formatting issue",
+    "Line 261: List item formatting issue"
   ],
   "latex_issues": [
     "Improper subscript formatting in: $C_n(S)$",
@@ -95,17 +98,17 @@
     "Missing required mathematical notation pattern: \\$\\{.*\\}\\$"
   ],
   "content_statistics": {
-    "total_lines": 785,
-    "total_words": 4876,
-    "total_characters": 38486,
+    "total_lines": 793,
+    "total_words": 4969,
+    "total_characters": 39299,
     "header_count": 72,
-    "latex_inline_count": 84,
+    "latex_inline_count": 83,
     "latex_display_count": 0,
     "table_lines": 21,
     "code_blocks": 6,
-    "estimated_pages": 19.504
+    "estimated_pages": 19.876
   },
   "tone_issues": [
-    "Excessive first person usage (22 instances)"
+    "Excessive first person usage (21 instances)"
   ]
 }
