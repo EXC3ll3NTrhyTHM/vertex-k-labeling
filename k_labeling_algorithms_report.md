@@ -2,33 +2,17 @@
 
 ## 1. Introduction
 
-### 1.1. Problem Statement
+### 1.1. Overview
 
-The vertex k-labeling problem is a fundamental challenge in graph theory that involves assigning positive integer labels to the vertices of a graph such that all edge weights (defined as the sum of labels of incident vertices) are distinct. Formally, given a graph $G = (V, E)$, a k-labeling is a function $f: V \rightarrow \{1, 2, \ldots, k\}$ such that for any two edges $\{u, v\}$ and $\{x, y\}$ in $E$, we have $f(u) + f(v) \neq f(x) + f(y)$ unless $\{u, v\} = \{x, y\}$. The edge irregularity strength of a graph, denoted $es(G)$, is the minimum value of $k$ for which such a labeling exists.
+This report addresses the vertex k-labeling problem, which involves assigning positive integer labels to graph vertices such that all edge weights (sum of incident vertex labels) are distinct. The goal is to find the minimum $k$ for which such a labeling exists, known as the edge irregularity strength, $es(G)$. We investigate this problem on Circulant graphs $C_n(S)$ and Mongolian Tent graphs $MT(m,n)$.
 
-This report investigates the vertex k-labeling problem on two specific families of structured graphs: Circulant graphs $C_n(S)$ and Mongolian Tent graphs $MT(m,n)$.
+### 1.2. Objectives and Scope
 
-The primary goal of this project is to design, implement, and compare three distinct algorithmic approaches: a backtracking algorithm, an intelligent heuristic algorithm, and a fast heuristic algorithm for solving the k-labeling problem on these specified graph types.
+Our primary objective is to design, implement, and compare three algorithmic approaches: a backtracking algorithm (for optimal solutions), and intelligent and fast heuristic algorithms (for approximate solutions on larger instances). We aim to analyze their performance, solution quality, and computational efficiency. The study focuses on Circulant graphs $C_n(n-5)$ and Mongolian Tent graphs $MT(3,n)$ for $n$ up to 50. While the backtracking algorithm guarantees optimality, its exponential complexity limits it to small graphs. Heuristic algorithms offer practical solutions for larger instances, though without optimality guarantees. All experiments are conducted on a standard desktop environment, and parallel implementations are not covered.
 
-### 1.2. Project Objectives
+### 1.3. Report Structure
 
-The key objectives of this project are:
-
-- Implement data structures to represent Circulant and Mongolian Tent graphs using efficient adjacency list representations
-- Develop a backtracking algorithm to find optimal k-labelings with guaranteed correctness
-- Develop heuristic intelligent and heuristic fast algorithms that provide approximate solutions for larger problem instances
-- Conduct a comprehensive comparative analysis of the three algorithms based on performance, solution quality, and computational efficiency
-- Analyze the theoretical time complexity and practical hardware limitations of each algorithmic approach
-
-### 1.3. Scope & Limitations
-
-This study focuses on Circulant graphs $C_n(n-5)$ for $n$ up to 50 and Mongolian Tent graphs $MT(3,n)$ for $n$ up to 50. The backtracking algorithm provides optimal solutions but is computationally limited to small graph instances due to its exponential time complexity. The heuristic intelligent and heuristic fast algorithms assume that randomized multi-attempt greedy search can find good solutions quickly, though they do not guarantee optimality or even feasibility in all cases.
-
-The experimental evaluation is conducted on a standard desktop computing environment, and results may vary on different hardware configurations. The study does not address parallel or distributed implementations of the algorithms.
-
-### 1.4. Report Structure
-
-This report is organized into six main sections. Following this introduction, Section 2 details the algorithmic strategies and system design, including algorithm descriptions and pseudocode. Section 3 presents experimental results and comparative analysis. Section 4 is the perfomance analysis. Section 5 concludes with findings and suggestions for future work.
+This report is organized into five main sections: Introduction, Algorithmic Strategies & System Design, Experimental Results & Comparative Analysis, Performance Analysis, and Conclusions & Future Work.
 
 ## 2. Algorithmic Strategies & System Design
 
@@ -395,12 +379,6 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 
 **Gap Analysis**:
 - Average gap from lower bound: Backtracking 0% (optimal), Heuristic Intelligent 5-15%, Heuristic Fast 25-40%
-
-**Success Rate Analysis**:
-- Backtracking: 100% success rate within timeout limits, 0% beyond computational threshold
-- Heuristic Intelligent: 85-95% success rate across all tested instances
-- Heuristic Fast: 65-75% success rate with significantly faster execution
-- These success rates get worse as n grows
 
 #### 4.3.2. Algorithm Comparison Summary
 
