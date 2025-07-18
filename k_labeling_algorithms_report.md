@@ -409,11 +409,11 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 
 ##### k-Labeling Solution Examples
 
-![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_k_labeled.png)
+![Circulant graph C(10,5) with k-labeling solution](graphs/circulant_10_5_k_labeled.png)
 
 *Figure: Circulant graph C(10,5) with backtracking k-labeling solution*
 
-![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_heuristic_intelligent_k_labeled.png)
+![Circulant graph C(10,5) with k-labeling solution](graphs/circulant_10_5_heuristic_intelligent_k_labeled.png)
 
 *Figure: Circulant graph C(10,5) with intelligent heuristic k-labeling solution*
 
@@ -428,7 +428,8 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 **Success Rate Analysis**:
 - Backtracking: 100% success rate within timeout limits, 0% beyond computational threshold
 - Heuristic Intelligent: 85-95% success rate across all tested instances
-- Heuristic Fast: 75-85% success rate with significantly faster execution
+- Heuristic Fast: 65-75% success rate with significantly faster execution
+- These success rates get worse as n grows
 
 #### 4.3.2. Algorithm Comparison Summary
 
