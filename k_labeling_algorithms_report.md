@@ -1,10 +1,3 @@
-<!-- REPORT VALIDATION STATUS: INVALID
-Generated: 2025-07-17 20:22:09
-Errors: 33 | Warnings: 0
-Content: 4969 words, 72 sections, 19.9 pages
-LaTeX expressions: 83 inline, 0 display
-Tables: 21 lines | Code blocks: 6 -->
-
 # A Comparative Analysis of k-Labeling Algorithms for Circulant and Mongolian Tent Graphs
 
 ## 1. Introduction
@@ -15,21 +8,21 @@ The vertex k-labeling problem is a fundamental challenge in graph theory that in
 
 This report investigates the vertex k-labeling problem on two specific families of structured graphs: Circulant graphs $C_n(S)$ and Mongolian Tent graphs $MT(m,n)$. These graph classes represent important theoretical constructs with applications in network design, coding theory, and combinatorial optimization.
 
-The primary goal of this research is to design, implement, and rigorously compare three distinct algorithmic approaches: a branch and bound (exact) algorithm, a heuristic intelligent algorithm, and a heuristic fast algorithm for solving the k-labeling problem on these specified graph types.
+The primary goal of this research is to design, implement, and rigorously compare three distinct algorithmic approaches: a backtracking (exact) algorithm, a heuristic intelligent algorithm, and a heuristic fast algorithm for solving the k-labeling problem on these specified graph types.
 
 ### 1.2. Project Objectives
 
 The key objectives of this project are:
 
 - Implement data structures to represent Circulant and Mongolian Tent graphs using efficient adjacency list representations
-- Develop a branch and bound algorithm to find optimal k-labelings with guaranteed correctness
+- Develop a backtracking algorithm to find optimal k-labelings with guaranteed correctness
 - Develop heuristic intelligent and heuristic fast algorithms that provide approximate solutions for larger problem instances
 - Conduct a comprehensive comparative analysis of the three algorithms based on performance, solution quality, and computational efficiency
 - Analyze the theoretical time complexity and practical hardware limitations of each algorithmic approach
 
 ### 1.3. Scope & Limitations
 
-This study focuses on Circulant graphs $C_n(S)$ for $n$ up to 12 and Mongolian Tent graphs $MT(3,n)$ for $n$ up to 10. The branch and bound algorithm provides optimal solutions but is computationally limited to small graph instances due to its exponential time complexity. The heuristic intelligent and heuristic fast algorithms assume that randomized multi-attempt greedy search can find good solutions quickly, though they do not guarantee optimality or even feasibility in all cases.
+This study focuses on Circulant graphs $C_n(S)$ for $n$ up to 12 and Mongolian Tent graphs $MT(3,n)$ for $n$ up to 10. The backtracking algorithm provides optimal solutions but is computationally limited to small graph instances due to its exponential time complexity. The heuristic intelligent and heuristic fast algorithms assume that randomized multi-attempt greedy search can find good solutions quickly, though they do not guarantee optimality or even feasibility in all cases.
 
 The experimental evaluation is conducted on a standard desktop computing environment, and results may vary on different hardware configurations. The study does not address parallel or distributed implementations of the algorithms.
 
@@ -43,11 +36,11 @@ This report is organized into six main sections. Following this introduction, Se
 
 This study employs three distinct algorithmic strategies for solving the vertex k-labeling problem, each representing different trade-offs between solution optimality and computational efficiency.
 
-#### 2.1.1. Branch and Bound
+#### 2.1.1. Backtracking Algorithm
 
-Branch and bound is an intelligent exhaustive search algorithm that combines systematic exploration with sophisticated pruning techniques. It maintains a priority queue of partial solutions ordered by lower bound estimates, allowing it to focus on the most promising branches first. The algorithm calculates lower bounds on the minimum k-value needed to complete each partial labeling, pruning branches that cannot improve upon the current best solution.
+The backtracking algorithm guarantees finding the optimal k-labeling by performing an exhaustive, systematic search. It operates on a simple but powerful principle: iterate through possible values of `k`, starting from a theoretical lower bound, and for each `k`, use a backtracking search to determine if a valid labeling exists.
 
-For the k-labeling problem, branch and bound builds vertex labelings incrementally while using degree-based bounds, conflict analysis, and remaining vertex constraints to achieve effective pruning. This approach guarantees finding optimal solutions while achieving better practical performance than pure backtracking through intelligent search space reduction.
+The backtracking component works by attempting to label vertices one by one. If assigning a label to a vertex creates a conflict (i.e., a duplicate edge weight), it backtracks and tries a different label. If all labels for a vertex lead to a conflict, it backtracks further to the previously labeled vertex. This process continues until a complete, valid labeling is found for the given `k`, or the entire search space is exhausted. The first value of `k` for which a solution is found is guaranteed to be the optimal one.
 
 #### 2.1.2. Heuristics
 
@@ -66,84 +59,126 @@ The system employs adjacency list representation for graph storage, where each v
 
 Graphs are represented as Python dictionaries where keys are vertex identifiers and values are lists of adjacent vertices. For Mongolian Tent graphs, vertices are represented as tuples $(row, column)$ with an additional apex vertex. Circulant graphs use integer vertex labels $\{0, 1, \ldots, n-1\}$.
 
-### 2.3. Branch and Bound Algorithm Design
+### 2.3. Backtracking Algorithm Design
 
-The branch and bound algorithm combines systematic search with intelligent pruning 
-        using lower bound estimation. It builds vertex labelings incrementally while maintaining a priority 
-        queue of partial solutions ordered by their lower bound estimates. For each partial solution, the 
-        algorithm calculates a lower bound on the minimum k-value needed to complete the labeling. If this 
-        lower bound exceeds the current best known solution, the branch is pruned. The algorithm uses 
-        sophisticated bounding techniques including degree-based bounds, conflict analysis, and remaining 
-        vertex constraints to achieve effective pruning while guaranteeing optimal solutions.
+The backtracking algorithm is designed to find the optimal k-labeling by iteratively testing values of `k` and using a backtracking search for each. This method guarantees optimality because it starts from the lowest possible `k` and is exhaustive.
+
+The core of the algorithm is the backtracking function, which builds a solution incrementally. It assigns labels to vertices one by one according to a predefined order. After each assignment, it checks for immediate edge weight conflicts. If a conflict is found, it immediately backtracks, undoing the assignment and trying the next available label. This systematic process ensures that all valid possibilities are explored without requiring the complex bounding functions and priority queues associated with a true branch-and-bound approach.
 
 #### 2.3.1. Algorithm Description
 
-The branch and bound algorithm implements a systematic search with intelligent pruning using lower bound estimation. The core strategy involves:
+The algorithm implements an iterative search that calls a recursive backtracking solver:
 
-1. **Priority Queue Management**: Maintain partial solutions ordered by lower bound estimates
-2. **Lower Bound Calculation**: Estimate minimum k-value needed to complete each partial labeling
-3. **Branch Pruning**: Eliminate branches that cannot improve upon the current best solution
-4. **Optimal Solution Tracking**: Update best known solution when complete labelings are found
-5. **Intelligent Exploration**: Focus on most promising branches first through priority ordering
+1.  **Iterative Search**: The main loop starts with `k` at a theoretical lower bound and increments it by one in each iteration.
+2.  **Backtracking Invocation**: For each `k`, it calls the backtracking function to search for a valid labeling.
+3.  **Recursive Search**: The backtracking function assigns labels `1..k` to each vertex. It checks for immediate edge weight conflicts with already-labeled neighbors.
+4.  **Pruning on Conflict**: If a label assignment creates a conflict, the algorithm immediately prunes that path and backtracks.
+5.  **Termination**: The first `k` for which the backtracking search returns a valid solution is the optimal `k`.
 
 #### 2.3.2. Pseudocode Implementation
 
 ```
-ALGORITHM: Branch and Bound k-Labeling
+ALGORITHM: Backtracking k-Labeling
 INPUT: adjacency_list, initial_k_bound
 OUTPUT: Optimal labeling and minimum k-value
 
-1. priority_queue ← empty priority queue (ordered by lower bound)
-2. best_solution ← None
-3. best_k ← infinity
-4. initial_state ← (empty_labeling, unlabeled_vertices, used_weights, 0)
-5. priority_queue.push(initial_state, calculate_lower_bound(initial_state))
-6. 
-7. WHILE priority_queue is not empty DO
-8.     current_state, lower_bound ← priority_queue.pop()
-9.     vertex_labels, remaining_vertices, used_weights, current_k ← current_state
-10.    
-11.    IF lower_bound ≥ best_k THEN
-12.        CONTINUE  // Prune this branch
-13.    
-14.    IF remaining_vertices is empty THEN
-15.        IF current_k < best_k THEN
-16.            best_k ← current_k
-17.            best_solution ← vertex_labels
-18.        CONTINUE
-19.    
-20.    vertex ← select_next_vertex(remaining_vertices, vertex_labels)
-21.    new_remaining ← remaining_vertices without vertex
-22.    
-23.    FOR label = 1 to min(best_k - 1, calculate_max_feasible_label(vertex)) DO
-24.        new_labels ← vertex_labels ∪ {vertex: label}
-25.        new_weights ← used_weights
-26.        conflict ← False
-27.        max_weight ← current_k
-28.        
-29.        FOR each neighbor of vertex DO
-30.            IF neighbor in vertex_labels THEN
-31.                weight ← label + vertex_labels[neighbor]
-32.                IF weight in used_weights THEN
-33.                    conflict ← True
-34.                    BREAK
-35.                new_weights ← new_weights ∪ {weight}
-36.                max_weight ← max(max_weight, weight)
-37.        
-38.        IF NOT conflict THEN
-39.            new_state ← (new_labels, new_remaining, new_weights, max_weight)
-40.            bound ← calculate_lower_bound(new_state)
-41.            IF bound < best_k THEN
-42.                priority_queue.push(new_state, bound)
-43. 
-44. RETURN (best_k, best_solution)
+  Main Function: `Find_Optimal_Labeling`
+
+    1 function Find_Optimal_Labeling(graph):
+    2   // 1. Start with the lowest possible value for k.
+    3   k = calculate_lower_bound(graph)
+    4
+    5   // 2. Loop indefinitely, incrementing k until a solution is found.
+    6   while true:
+    7     print("Attempting to solve for k = " + k)
+    8
+    9     // 3. For the current k, try to find a valid labeling using backtracking.
+   10     //    Initialize with an empty set of labels and used edge weights.
+   11     solution = Backtracking_Search(
+   12         vertex_index = 0,
+   13         k = k,
+   14         labels = {},
+   15         used_weights = {}
+   16     )
+   17
+   18     // 4. If the backtracking search succeeded, we have found the optimal k.
+   19     if solution is not null:
+   20       print("Success! Found optimal solution for k = " + k)
+   21       return k, solution
+   22
+   23     // 5. If backtracking failed, increment k and try again in the next iteration.
+   24     k = k + 1
+
+  ---
+
+  Helper Function: `Backtracking_Search`
+
+  This function performs a recursive, depth-first search to find a valid labeling for a fixed k.
+
+    1 function Backtracking_Search(vertex_index, k, labels, used_weights):
+    2   // Base Case: If all vertices have been labeled, a valid solution is found for this k.
+    3   if vertex_index == total_number_of_vertices:
+    4     return labels
+    5
+    6   // Get the next vertex to process from a predefined order.
+    7   current_vertex = get_vertex_from_order(vertex_index)
+    8
+    9   // Try assigning every possible label from 1 to k to the current vertex.
+   10   for label from 1 to k:
+   11     labels[current_vertex] = label
+   12
+   13     // Check if this assignment creates any immediate edge weight conflicts.
+   14     is_valid, newly_formed_weights = Is_Assignment_Valid(current_vertex, labels,
+      used_weights)
+   15
+   16     if is_valid:
+   17       // If valid, proceed to the next vertex in the recursion.
+   18       // Pass the updated set of used weights down.
+   19       updated_used_weights = used_weights + newly_formed_weights
+   20       result = Backtracking_Search(vertex_index + 1, k, labels, updated_used_weights)
+   21
+   22       // If the recursive call found a complete solution, propagate it up.
+   23       if result is not null:
+   24         return result
+   25
+   26     // Backtrack: The assignment of 'label' to 'current_vertex' was either invalid
+   27     // or did not lead to a solution. Undo the assignment and try the next label.
+   28     remove labels[current_vertex]
+   29
+   30   // If the loop finishes, no label from 1 to k worked for this vertex.
+   31   // Return null to signal failure at this path.
+   32   return null
+
+  ---
+
+  Helper Function: `Is_Assignment_Valid`
+
+  This function checks if labeling a vertex creates a duplicate edge weight.
+
+    1 function Is_Assignment_Valid(current_vertex, labels, used_weights):
+    2   newly_formed_weights = {}
+    3   current_label = labels[current_vertex]
+    4
+    5   // Check against all previously labeled neighbors.
+    6   for each neighbor of current_vertex:
+    7     if neighbor is already in labels:
+    8       weight = current_label + labels[neighbor]
+    9
+   10       // Conflict: This edge weight has been seen before.
+   11       if weight is in used_weights or weight is in newly_formed_weights:
+   12         return false, {} // Invalid assignment
+   13
+   14       add weight to newly_formed_weights
+   15
+   16   // No conflicts found.
+   17   return true, newly_formed_weights
 ```
 
 #### 2.3.3. Complexity Analysis
 
-- **Time Complexity**: $O(k^{|V|} \cdot \log(k^{|V|}))$ where $k$ is the maximum label value and $|V|$ is the number of vertices
-- **Space Complexity**: $O(k^{|V|} + |V| + k)$ for priority queue, vertex labels and weight tracking
-- **Optimization**: Lower bound estimation provides intelligent pruning with priority queue management
+- **Time Complexity**: $O(k_{max} \cdot k^{|V|})$ where $k_{max}$ is the final optimal k, and $|V|$ is the number of vertices. The $k^{|V|}$ term represents the worst-case number of nodes in the search tree for the backtracking algorithm for a given k.
+- **Space Complexity**: $O(|V| + |E| + k)$ for the graph representation, recursion stack, and the used weights array.
+- **Optimization**: The primary optimization is the iterative increase of k, which ensures the first solution found is optimal. The search itself uses simple conflict detection as its pruning method.
 
 ### 2.4. Heuristic Algorithm Design
 
@@ -292,10 +327,9 @@ Circulant graphs $C_n(S)$ are constructed with:
 
 #### 2.5.2. Optimization Techniques
 
-**Branch and Bound Optimizations**:
+**Backtracking Algorithm Optimizations**:
 - Bit-array implementation for $O(1)$ weight conflict detection
-- Priority queue management for intelligent branch exploration
-- Lower bound estimation for effective pruning
+- Iterative deepening search for `k` starting from a tight lower bound.
 
 **Heuristic Optimizations**:
 - Adaptive vertex ordering based on degree and failure history
@@ -325,50 +359,56 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 - **Mongolian Tent Graphs**: $MT(3,n)$ for $n \in \{3, 4, 5, 8, 10, 14, 15\}$
 - **Circulant Graphs**: $C_n(r)$ for $(n,r) \in \{(6,2), (8,3), (10,5), (12,5), (12,7), (14,9)\}$
 - **Timeout Limits**: 120 seconds for branch and bound, 15 seconds for heuristic intelligent, 10 seconds for heuristic fast
-- **Heuristic Attempts**: 50 attempts for intelligent mode, 25 attempts for fast mode
+- **Heuristic Attempts**: 100(set constant) attempts for intelligent mode, max(2, min(10, n/2)) attempts for fast mode
 
 ### 3.2. Comparative Results
 
 #### 3.2.1. Mongolian Tent Graph Results
 
-| Graph | Lower Bound | Branch & Bound k | Branch & Bound Time (s) | Heuristic Fast k | Heuristic Fast Time (s) | Heuristic Intelligent k | Heuristic Intelligent Time (s) |
+| Graph | Lower Bound | Backtracking k | Backtracking Time (s) | Heuristic Fast k | Heuristic Fast Time (s) | Heuristic Intelligent k | Heuristic Intelligent Time (s) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| $MT(3,3)$ | 8 | 8 (+0) | 0.001 | 10 (+2) | 0.035 | 9 (+1) | 0.100 |
-| $MT(3,4)$ | 11 | 11 (+0) | 0.151 | 13 (+2) | 0.045 | 12 (+1) | 0.130 |
-| $MT(3,5)$ | 14 | 14 (+0) | 0.301 | 17 (+3) | 0.055 | 15 (+1) | 0.160 |
-| $MT(3,8)$ | 23 | TIMEOUT/FAIL | 120.00 | 27 (+4) | 0.085 | 25 (+2) | 0.250 |
-| $MT(3,10)$ | 29 | TIMEOUT/FAIL | 120.00 | 34 (+5) | 0.105 | 32 (+3) | 0.310 |
+| $MT(3,3)$ | 8 | 8 (+0) | 0.97 | 11 (+3) | 0.00 | 9 (+1) | 0.04 |
+| $MT(3,4)$ | 11 | 11 (+0) | 0.35 | 12 (+1) | 0.00 | 12 (+1) | 0.05 |
+| $MT(3,5)$ | 14 | 14 (+0) | 8.04 | 17 (+3) | 0.01 | 15 (+1) | 0.17 |
+| $MT(3,8)$ | 23 | TIMEOUT | NA | 34 (+11) | 0.18 | 27 (+4) | 1.46 |
+| $MT(3,10)$ | 29 | TIMEOUT | NA | 42 (+13) | 0.49 | 32 (+3) | 1.45 |
+| $MT(3,50)$ | 149 | TIMEOUT | NA | 214 (+65) | 524.35 | TIMEOUT | NA |
 
 **Key Observations**:
-- Branch and bound algorithm provides optimal solutions for small instances ($n \leq 8$) but becomes computationally intractable for larger graphs
-- Heuristic intelligent mode consistently finds feasible solutions with reasonable gaps from theoretical lower bounds
-- Heuristic fast mode offers the best speed for time-critical applications
-- Execution times demonstrate the exponential scaling of branch and bound versus polynomial scaling of heuristics
+- The backtracking algorithm provides optimal solutions for small instances ($n \leq 5$) but becomes computationally intractable for larger graphs due to its exponential nature.
+- Heuristic intelligent mode consistently finds feasible solutions with reasonable gaps from theoretical lower bounds.
+- Heuristic fast mode offers the best speed for time-critical applications.
+- Execution times demonstrate the exponential scaling of the backtracking algorithm versus polynomial scaling of heuristics.
 
-##### Branch and Bound Algorithm Examples
+##### k-Labeling Solution Examples
 
-![Mongolian Tent MT(3,10) solved with branch and bound algorithm](graphs\mt3_10_backtracking.png)
+![Mongolian Tent MT(3,5) solved with backtracking algorithm](graphs\mt3_5_branch-and-bound.png)
 
-*Figure: Mongolian Tent MT(3,10) solved with branch and bound algorithm*
+*Figure: Mongolian Tent MT(3,10) solved with backtracking algorithm*
 
-![Mongolian Tent MT(3,14) solved with branch and bound algorithm](graphs\mt3_14_backtracking.png)
+![Mongolian Tent MT(3,15) solved with heuristic intelligent algorithm](graphs\mt3_15_heuristic_intelligent.png)
 
-*Figure: Mongolian Tent MT(3,14) solved with branch and bound algorithm*
+*Figure: Mongolian Tent MT(3,14) solved with heuristic intelligent algorithm*
 
 
 #### 4.2.2. Circulant Graph Results
 
-| Graph | Lower Bound | Branch & Bound k | Branch & Bound Time (s) | Heuristic Fast k | Heuristic Fast Time (s) | Heuristic Intelligent k | Heuristic Intelligent Time (s) |
+| Graph | Lower Bound | Backtracking k | Backtracking Time (s) | Heuristic Fast k | Heuristic Fast Time (s) | Heuristic Intelligent k | Heuristic Intelligent Time (s) |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| $C_{6}(2)$ | 5 | 5 (+0) | 0.091 | 7 (+2) | 0.031 | 6 (+1) | 0.122 |
-| $C_{8}(3)$ | 7 | 7 (+0) | 0.121 | 9 (+2) | 0.041 | 8 (+1) | 0.162 |
-| $C_{10}(5)$ | 10 | TIMEOUT/FAIL | 120.00 | 13 (+3) | 0.051 | 12 (+2) | 0.202 |
-| $C_{12}(5)$ | 11 | TIMEOUT/FAIL | 120.00 | 15 (+4) | 0.061 | 13 (+2) | 0.242 |
+| $C_{8}(3)$ | 7 | 7 (+0) | 0.02 | 7 (+0) | 0.00 | 7 (+0) | 0.00 |
+| $C_{10}(5)$ | 13 | 13 (+0) | 53.76 | 16 (+3) | 0.01 | 14 (+1) | 0.15 |
+| $C_{12}(7)$ | 10 | TIMEOUT | NA | 33 (+11) | 0.30 | 28 (+6) | 1.74 |
+| $C_{20}(15)$ | 76 | TIMEOUT | NA | 178 (+76) | 174.92 | TIMEOUT | NA |
+| $C_{50}(45)$ | 563 | TIMEOUT | NA | TBA | +10000s | TIMEOUT | NA |
+
 
 **Key Observations**:
+- Cicurlant graphs exhibit worse solvability characteristics than Mongolian Tent graphs
+    - This is due to them have a higher degree on each vertex especially as n grows
+- The fast heurisitc mode is the only one that is able to go above n 
 - Circulant graphs generally exhibit better solvability characteristics than Mongolian Tent graphs
 - Both heuristic modes perform well on regular structures with symmetric properties
-- Branch and bound remains feasible for moderately sized Circulant graphs due to their structural regularity
+- Backtracking remains feasible for moderately sized Circulant graphs due to their structural regularity
 - Generator set size significantly impacts problem difficulty and solution quality
 
 ##### k-Labeling Solution Examples
@@ -386,9 +426,9 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 
 #### 4.3.1. Theoretical Complexity Validation
 
-**Branch and Bound Algorithm**:
-- Theoretical complexity: $O(k^{|V|} \cdot \log(k^{|V|}))$ confirmed by exponential growth in execution times
-- Memory usage scales with priority queue size and lower bound calculations
+**Backtracking Algorithm**:
+- Theoretical complexity: $O(k_{max} \cdot k^{|V|})$ confirmed by exponential growth in execution times
+- Memory usage scales with recursion depth and the size of the used weights array.
 - Practical scalability limited to graphs with $|V| \leq 15$ vertices
 
 **Heuristic Algorithm**:
@@ -414,30 +454,18 @@ The experimental evaluation was conducted on a standard desktop computing enviro
 #### 4.3.2. Solution Quality Analysis
 
 **Gap Analysis**:
-- Average gap from lower bound: Branch and Bound 0% (optimal), Heuristic Intelligent 15-25%, Heuristic Fast 25-40%
+- Average gap from lower bound: Backtracking 0% (optimal), Heuristic Intelligent 15-25%, Heuristic Fast 25-40%
 - Heuristic performance correlates with graph regularity and structural symmetry
 - Multi-attempt randomization significantly improves solution quality over single-pass greedy approaches
 
 **Success Rate Analysis**:
-- Branch and Bound: 100% success rate within timeout limits, 0% beyond computational threshold
+- Backtracking: 100% success rate within timeout limits, 0% beyond computational threshold
 - Heuristic Intelligent: 85-95% success rate across all tested instances
 - Heuristic Fast: 75-85% success rate with significantly faster execution
 
-#### 4.3.3. Scalability Assessment
+#### 4.3.3. Algorithm Comparison Summary
 
-**Memory Complexity**:
-- Both algorithms maintain $O(|V| + k)$ space complexity in practice
-- Bit-array optimization reduces memory footprint by approximately 8× for weight tracking
-- No memory-related failures observed within tested parameter ranges
-
-**Computational Limits**:
-- Branch and bound becomes impractical for $|V| > 15$ or $k > 20$ due to exponential search space
-- Heuristic algorithms scale effectively to larger instances with linear time growth
-- Hardware constraints primarily affect branch and bound rather than heuristic performance
-
-#### 4.3.4. Algorithm Comparison Summary
-
-| Criterion | Branch and Bound | Heuristic Intelligent | Heuristic Fast |
+| Criterion | Backtracking | Heuristic Intelligent | Heuristic Fast |
 |-----------|------------------|---------------------|----------------|
 | **Optimality** | Guaranteed | Not guaranteed | Not guaranteed |
 | **Speed** | Exponential | Fast | Very fast |
@@ -456,14 +484,13 @@ This comparative study of k-labeling algorithms for Circulant and Mongolian Tent
 
 #### 5.1.1. Algorithm Performance Comparison
 
-**Branch and Bound Algorithm Strengths**:
+**Backtracking Algorithm Strengths**:
 - Provides guaranteed optimal solutions when computational resources permit
-- Intelligent pruning with lower bound estimation ensures efficient search
-- Priority queue optimization delivers systematic exploration of promising branches
+- Systematic, exhaustive search ensures correctness.
 - Performs well on small to medium-sized instances ($|V| \leq 15$)
 
-**Branch and Bound Algorithm Limitations**:
-- Exponential time complexity $O(k^{|V|} \cdot \log(k^{|V|}))$ severely limits scalability
+**Backtracking Algorithm Limitations**:
+- Exponential time complexity $O(k_{max} \cdot k^{|V|})$ severely limits scalability
 - Becomes computationally intractable for larger graph instances
 - No approximation capability when optimal solutions are not required
 - Hardware-dependent performance ceiling restricts practical applicability
@@ -491,7 +518,7 @@ This comparative study of k-labeling algorithms for Circulant and Mongolian Tent
 
 Based on the experimental results, we recommend:
 
-- **For small instances** ($|V| \leq 10$): Use branch and bound algorithm for guaranteed optimal solutions
+- **For small instances** ($|V| \leq 10$): Use backtracking algorithm for guaranteed optimal solutions
 - **For medium instances** ($10 < |V| \leq 20$): Use heuristic intelligent mode for balanced performance
 - **For large instances** ($|V| > 20$): Use heuristic fast mode for rapid approximate solutions
 - **For time-critical applications**: Always use heuristic fast mode regardless of instance size
@@ -507,8 +534,8 @@ Based on the experimental results, we recommend:
 - Design hybrid approaches combining multiple heuristic strategies
 - Investigate approximation guarantees and theoretical performance bounds
 
-**Branch and Bound Algorithm Optimizations**:
-- Implement parallel branch and bound with work-stealing for multi-core systems
+**Backtracking Algorithm Optimizations**:
+- Implement parallel backtracking with work-stealing for multi-core systems
 - Develop intelligent branching heuristics to reduce search space
 - Design incremental constraint propagation for improved pruning
 - Explore enhanced lower bound techniques for tighter pruning
@@ -556,7 +583,7 @@ Based on the experimental results, we recommend:
 
 ### 5.3. Final Remarks
 
-This study demonstrates that the choice between exact and heuristic approaches for the k-labeling problem depends critically on the specific requirements of the application. While branch and bound algorithms provide theoretical guarantees, their exponential complexity limits practical applicability. Heuristic algorithms offer a compelling alternative for larger instances, though at the cost of solution optimality guarantees.
+This study demonstrates that the choice between exact and heuristic approaches for the k-labeling problem depends critically on the specific requirements of the application. While backtracking algorithms provide theoretical guarantees, their exponential complexity limits practical applicability. Heuristic algorithms offer a compelling alternative for larger instances, though at the cost of solution optimality guarantees.
 
 The dual-mode heuristic design proves particularly valuable, allowing users to balance solution quality and computational efficiency based on their specific needs. Future work should focus on bridging the gap between theoretical optimality and practical scalability through improved algorithmic techniques and hybrid approaches.
 
@@ -567,234 +594,3 @@ The insights gained from this comparative analysis contribute to the broader und
 [1] Irregularity strength of circulant graphs using algorithmic approach. Research paper examining computational methods for determining edge irregularity strength in circulant graph families. *Available in reference_docs/Irregularity_Strength_of_Circulant_Graphs_Using_Algorithmic_Approach (1).pdf*
 
 [2] Research paper on k-labeling algorithms and graph theory applications. Technical document providing theoretical foundations and algorithmic approaches for vertex labeling problems. *Available in reference_docs/paper1_v4 (1).pdf*
-
-## 7. Appendix
-
-### 7.1. Algorithm Visualization Gallery
-
-This section presents a comprehensive collection of algorithm execution results and graph visualizations generated during the experimental evaluation.
-
-#### 7.1.1. Backtracking Algorithm Results
-
-The following images demonstrate the backtracking algorithm's performance on various graph instances, showing both successful solutions and the systematic search process.
-
-#### Backtracking Algorithm Solutions
-
-![Mongolian Tent MT(3,10) solved with backtracking algorithm](graphs\mt3_10_backtracking.png)
-
-*Figure: Mongolian Tent MT(3,10) solved with backtracking algorithm*
-
-![Mongolian Tent MT(3,14) solved with backtracking algorithm](graphs\mt3_14_backtracking.png)
-
-*Figure: Mongolian Tent MT(3,14) solved with backtracking algorithm*
-
-![Mongolian Tent MT(3,3) solved with backtracking algorithm](graphs\mt3_3_backtracking.png)
-
-*Figure: Mongolian Tent MT(3,3) solved with backtracking algorithm*
-
-![Mongolian Tent MT(3,4) solved with backtracking algorithm](graphs\mt3_4_backtracking.png)
-
-*Figure: Mongolian Tent MT(3,4) solved with backtracking algorithm*
-
-
-#### 7.1.2. Heuristic Algorithm Results
-
-These visualizations showcase the heuristic algorithm's performance across different modes (accurate, intelligent, fast) and demonstrate the trade-offs between solution quality and computational efficiency.
-
-#### Heuristic Algorithm Solutions
-
-![Mongolian Tent MT(3,100) solved with fast heuristic algorithm](graphs\mt3_100_heuristic_fast.png)
-
-*Figure: Mongolian Tent MT(3,100) solved with fast heuristic algorithm*
-
-![Mongolian Tent MT(3,10) solved with accurate heuristic algorithm](graphs\mt3_10_heuristic_accurate.png)
-
-*Figure: Mongolian Tent MT(3,10) solved with accurate heuristic algorithm*
-
-![Mongolian Tent MT(3,10) solved with fast heuristic algorithm](graphs\mt3_10_heuristic_fast.png)
-
-*Figure: Mongolian Tent MT(3,10) solved with fast heuristic algorithm*
-
-![Mongolian Tent MT(3,10) solved with intelligent heuristic algorithm](graphs\mt3_10_heuristic_intelligent.png)
-
-*Figure: Mongolian Tent MT(3,10) solved with intelligent heuristic algorithm*
-
-
-#### 7.1.3. k-Labeling Solution Examples
-
-The following examples illustrate successful k-labelings with vertex labels and edge weights clearly displayed, demonstrating the constraint satisfaction achieved by both algorithms.
-
-#### Complete k-Labeling Solutions
-
-![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_heuristic_accurate_k_labeled.png)
-
-*Figure: Circulant graph C(10,5) with k-labeling solution*
-
-![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_heuristic_intelligent_k_labeled.png)
-
-*Figure: Circulant graph C(10,5) with k-labeling solution*
-
-![Circulant graph C(10,5) with k-labeling solution](graphs\circulant_10_5_k_labeled.png)
-
-*Figure: Circulant graph C(10,5) with k-labeling solution*
-
-![Circulant graph C(14,9) with k-labeling solution](graphs\circulant_14_9_heuristic_intelligent_k_labeled.png)
-
-*Figure: Circulant graph C(14,9) with k-labeling solution*
-
-
-#### 7.1.4. Algorithm Execution Animation
-
-The following animation demonstrates the step-by-step execution of the heuristic algorithm, showing how vertex labels are assigned and conflicts are resolved during the search process.
-
-![Step-by-step algorithm execution showing the labeling process](graphs\solver_run_n3_heuristic.gif)
-
-*Figure: Step-by-step algorithm execution showing the labeling process*
-
-### 7.2. Algorithm Implementation Details
-
-#### 7.2.1. Backtracking Algorithm Optimizations
-
-The backtracking implementation includes several key optimizations:
-
-```python
-def _init_used_weights(length: int):
-    """Initialize weight tracking with bit-array optimization."""
-    if _BITARRAY_AVAILABLE:
-        return bitarray(length)
-    else:
-        return [False] * length
-```
-
-**Bit-Array Benefits**:
-- Memory usage reduced by factor of 8 (1 bit vs 8 bytes per boolean)
-- Cache-friendly contiguous memory layout
-- Atomic bit operations for conflict detection
-
-#### 7.2.2. Heuristic Algorithm Parameters
-
-**Default Configuration**:
-- Accurate mode: 100 attempts, full randomization
-- Intelligent mode: 50 attempts, limited backjumping
-- Fast mode: 2-10 randomized passes after deterministic phase
-
-**Adaptive Parameters**:
-- Vertex ordering: Degree-based with failure history weighting
-- Label selection: Conflict minimization scoring
-- Backjump limit: Maximum 3 jumps per attempt
-
-### 7.3. Graph Construction Algorithms
-
-#### 7.3.1. Mongolian Tent Graph Generation
-
-```python
-def create_mongolian_tent_graph(tent_size: int) -> Dict[Any, List[Any]]:
-    """Generate MT(3,n) graph with adjacency list representation."""
-    graph = collections.defaultdict(list)
-    
-    # Horizontal edges for three rows
-    for i in range(1, tent_size):
-        for row in (1, 2, 3):
-            graph[(row, i)].append((row, i + 1))
-            graph[(row, i + 1)].append((row, i))
-    
-    # Vertical connections between adjacent rows
-    for i in range(1, tent_size + 1):
-        graph[(1, i)].append((2, i))
-        graph[(2, i)].append((1, i))
-        graph[(2, i)].append((3, i))
-        graph[(3, i)].append((2, i))
-    
-    # Apex vertex connections
-    for i in range(1, tent_size + 1):
-        graph['apex'].append((1, i))
-        graph[(1, i)].append('apex')
-    
-    return graph
-```
-
-#### 7.3.2. Circulant Graph Generation
-
-```python
-def generate_circulant_graph(n: int, r: int) -> Dict[int, List[int]]:
-    """Generate C_n(r) graph with symmetric connections."""
-    graph = collections.defaultdict(list)
-    
-    for i in range(n):
-        # Forward and backward connections
-        for offset in [r, -r]:
-            neighbor = (i + offset) % n
-            if neighbor != i:  # Avoid self-loops
-                graph[i].append(neighbor)
-    
-    return graph
-```
-
-### 7.4. Complexity Analysis Details
-
-#### 7.4.1. Backtracking Time Complexity Derivation
-
-For a graph with $|V|$ vertices and maximum label value $k$:
-- Each vertex has $k$ possible label assignments
-- Search tree has maximum depth $|V|$
-- Branching factor is $k$ at each level
-- Total nodes explored: $O(k^{|V|})$
-- Constraint checking per node: $O(\Delta)$ where $\Delta$ is maximum degree
-- Overall complexity: $O(k^{|V|} \cdot \Delta)$
-
-#### 7.4.2. Heuristic Time Complexity Derivation
-
-For accurate mode with $A$ attempts:
-- Vertex processing: $O(|V|)$ per attempt
-- Label evaluation: $O(k \cdot \Delta)$ per vertex
-- Conflict scoring: $O(\Delta^2)$ in worst case
-- Backjumping overhead: $O(|V|)$ per jump
-- Total complexity: $O(A \cdot |V| \cdot k \cdot \Delta^2)$
-
-### 7.5. Experimental Data Summary
-
-#### 7.5.1. Hardware Specifications
-
-- **CPU**: Intel Core i7-10700K @ 3.80GHz (8 cores, 16 threads)
-- **Memory**: 32GB DDR4-3200 RAM
-- **Storage**: NVMe SSD (for fast I/O operations)
-- **OS**: Windows 11 Pro x64
-- **Python**: CPython 3.9.7 with standard optimizations
-
-#### 7.5.2. Benchmark Methodology
-
-**Timing Measurements**:
-- High-resolution performance counters using `time.perf_counter()`
-- Multiple runs averaged for statistical significance
-- Timeout handling with graceful algorithm termination
-- Memory usage monitoring throughout execution
-
-**Validation Procedures**:
-- Edge weight uniqueness verification for all solutions
-- Label range constraint checking (1 ≤ label ≤ k)
-- Graph connectivity preservation validation
-- Lower bound comparison for solution quality assessment
-
-### 7.6. Source Code Organization
-
-#### 7.6.1. Module Structure
-
-```
-src/
-├── labeling_solver.py      # Main algorithm implementations
-├── graph_generator.py      # Graph construction utilities
-├── graph_properties.py     # Lower bound calculations
-├── report_generator.py     # Academic report generation
-├── visualization.py        # Graph plotting and animation
-└── constants.py           # Configuration parameters
-```
-
-#### 7.6.2. Key Dependencies
-
-- **NetworkX**: Graph analysis and property calculations
-- **Matplotlib**: Visualization and plotting
-- **BitArray**: Memory-efficient boolean arrays
-- **Collections**: Default dictionary implementations
-- **Typing**: Type hints for code clarity
-
-This appendix provides additional technical details and comprehensive visual documentation for readers interested in implementation specifics and experimental methodology. The complete source code and all generated visualizations are available for further analysis and reproduction of results.

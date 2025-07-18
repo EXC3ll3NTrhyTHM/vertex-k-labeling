@@ -1,0 +1,94 @@
+{
+    "graph_type": "circulant",
+    "n": 8,
+    "r": 3,
+    "k_value": 7,
+    "lower_bound": 7,
+    "gap": 0,
+    "time_taken_seconds": 0.01578211784362793,
+    "solver_name": "Optimal Circulant Solver",
+    "vertices": [
+        {
+            "id": 0,
+            "label": "v0",
+            "k_label": 7
+        },
+        {
+            "id": 1,
+            "label": "v1",
+            "k_label": 5
+        },
+        {
+            "id": 2,
+            "label": "v2",
+            "k_label": 3
+        },
+        {
+            "id": 3,
+            "label": "v3",
+            "k_label": 1
+        },
+        {
+            "id": 4,
+            "label": "v4",
+            "k_label": 2
+        },
+        {
+            "id": 5,
+            "label": "v5",
+            "k_label": 2
+        },
+        {
+            "id": 6,
+            "label": "v6",
+            "k_label": 1
+        },
+        {
+            "id": 7,
+            "label": "v7",
+            "k_label": 1
+        }
+    ],
+    "edges": [
+        {
+            "source": 0,
+            "target": 3,
+            "weight": 8
+        },
+        {
+            "source": 0,
+            "target": 5,
+            "weight": 9
+        },
+        {
+            "source": 1,
+            "target": 4,
+            "weight": 7
+        },
+        {
+            "source": 1,
+            "target": 6,
+            "weight": 6
+        },
+        {
+            "source": 2,
+            "target": 5,
+            "weight": 5
+        },
+        {
+            "source": 2,
+            "target": 7,
+            "weight": 4
+        },
+        {
+            "source": 3,
+            "target": 6,
+            "weight": 2
+        },
+        {
+            "source": 4,
+            "target": 7,
+            "weight": 3
+        }
+    ]
+}
